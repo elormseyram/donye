@@ -100,7 +100,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: AppSpacing.xs),
               const Text(
-                'Use the credentials provided by your fleet admin',
+                'Sign in to manage your rides and bike',
                 style: TextStyle(
                   fontSize: 15,
                   color: AppColors.onSurfaceSecondary,
@@ -154,6 +154,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ],
                   ),
                 ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'New to SheRides? ',
+                    style: TextStyle(color: AppColors.onSurfaceSecondary),
+                  ),
+                  SrGhostButton(
+                    label: 'Create Account',
+                    onPressed: () => context.pushNamed(RouteNames.signup),
+                  ),
+                ],
               ),
             ],
           ),

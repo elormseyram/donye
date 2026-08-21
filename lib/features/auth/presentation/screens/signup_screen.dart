@@ -152,7 +152,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ),
                   SrGhostButton(
                     label: 'Sign In',
-                    onPressed: () => context.pop(),
+                    onPressed: () => context.goNamed(RouteNames.login),
                   ),
                 ],
               ),
