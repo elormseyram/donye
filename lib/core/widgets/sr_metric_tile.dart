@@ -69,10 +69,9 @@ class SrMetricTile extends StatelessWidget {
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: valueColor ?? AppColors.onSurface,
-                  height: 1.1,
                 ),
               ),
               if (unit != null) ...[

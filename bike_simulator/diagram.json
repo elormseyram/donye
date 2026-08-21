@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "author": "SheRides",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-sim-logic7",
+      "id": "gps",
+      "top": 180,
+      "left": -100,
+      "attrs": {
+        "label": "GPS NEO-6M (simulated)"
+      }
+    }
+  ],
+  "connections": [
+    ["esp:TX2", "gps:A", "green", []],
+    ["esp:RX2", "gps:B", "yellow", []],
+    ["esp:GND.1", "gps:GND", "black", []],
+    ["esp:3V3", "gps:VCC", "red", []]
+  ],
+  "serialMonitor": {
+    "display": "always"
+  }
+}

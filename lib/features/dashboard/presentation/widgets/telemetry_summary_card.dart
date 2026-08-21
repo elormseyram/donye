@@ -86,7 +86,7 @@ class TelemetrySummaryCard extends StatelessWidget {
               Expanded(
                 child: SrMetricTile(
                   icon: Icons.thermostat_outlined,
-                  label: 'Motor Temp',
+                  label: 'Temp',
                   value: isLoading || temperatureCelsius == null
                       ? '--'
                       : temperatureCelsius!.toStringAsFixed(0),
@@ -98,7 +98,7 @@ class TelemetrySummaryCard extends StatelessWidget {
               Expanded(
                 child: SrMetricTile(
                   icon: Icons.route_outlined,
-                  label: 'Odometer',
+                  label: 'Odo.',
                   value: isLoading || odometer == null
                       ? '--'
                       : odometer!.toStringAsFixed(0),

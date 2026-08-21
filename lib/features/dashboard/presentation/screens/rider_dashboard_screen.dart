@@ -9,6 +9,7 @@ import '../../../../core/widgets/sr_snackbar.dart';
 import '../../../../core/routes/route_names.dart';
 import '../../../../shared/components/connection_status_banner.dart';
 import '../../../telemetry/domain/entities/telemetry_entity.dart';
+import '../../../telemetry/presentation/providers/telemetry_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/telemetry_summary_card.dart';
 import '../widgets/bike_status_card.dart';
@@ -62,7 +63,7 @@ class RiderDashboardScreen extends ConsumerWidget {
   }
 }
 
-class _DashboardBody extends StatelessWidget {
+class _DashboardBody extends ConsumerWidget {
   const _DashboardBody({
     required this.isLoading,
     required this.riderName,
@@ -88,7 +89,22 @@ class _DashboardBody extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mqttConnected = ref.watch(mqttConnectionStatusProvider).valueOrNull?.isConnected ?? false;
+
+    void sendCommand(String type) {
+      if (!mqttConnected) {
+        SrSnackbar.show(context, message: 'MQTT not connected yet. Try again shortly.');
+        return;
+      }
+      try {
+        ref.read(mqttServiceProvider).publishCommand({'type': type});
+        SrSnackbar.show(context, message: '${type[0].toUpperCase()}${type.substring(1)} command sent.');
+      } catch (_) {
+        SrSnackbar.show(context, message: 'Failed to send command. Try again.', isError: true);
+      }
+    }
+
     return CustomScrollView(
       slivers: [
         SliverAppBar(
@@ -150,10 +166,10 @@ class _DashboardBody extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               QuickActionsRow(
                 isLoading: isLoading,
-                onLock: () => _showCommandSnackbar(context, 'Lock'),
-                onUnlock: () => _showCommandSnackbar(context, 'Unlock'),
-                onHonk: () => _showCommandSnackbar(context, 'Honk'),
-                onLights: () => _showCommandSnackbar(context, 'Lights'),
+                onLock: () => sendCommand('lock'),
+                onUnlock: () => sendCommand('unlock'),
+                onHonk: () => sendCommand('honk'),
+                onLights: () => sendCommand('lights_on'),
               ),
               const SizedBox(height: AppSpacing.md),
               _SectionHeader(
@@ -171,12 +187,7 @@ class _DashboardBody extends StatelessWidget {
     );
   }
 
-  void _showCommandSnackbar(BuildContext context, String command) {
-    SrSnackbar.show(
-      context,
-      message: '$command command will be available after MQTT connects.',
-    );
-  }
+
 }
 
 class _ProfileButton extends StatelessWidget {

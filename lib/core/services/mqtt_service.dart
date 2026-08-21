@@ -46,19 +46,25 @@ class MqttService {
     _connectionStatus.add(MqttConnectionStatus.connecting);
 
     final clientId = 'sherides_${DateTime.now().millisecondsSinceEpoch}';
+    final port = AppConfig.mqttUseTls
+        ? AppConfig.mqttBrokerTlsPort
+        : AppConfig.mqttBrokerPort;
+
     _client = MqttServerClient(AppConfig.mqttBrokerHost, clientId)
-      ..port = AppConfig.mqttBrokerPort
+      ..port = port
+      ..secure = AppConfig.mqttUseTls
       ..keepAlivePeriod = 30
       ..autoReconnect = false
+      ..connectTimeoutPeriod = 10000
       ..logging(on: false)
       ..onConnected = _onConnected
       ..onDisconnected = _onDisconnected
       ..onSubscribed = (_) {}
+      ..onBadCertificate = ((Object _) => true)
       ..connectionMessage = MqttConnectMessage()
-          .authenticateAs('rider', _lastToken!)
+          .authenticateAs(AppConfig.mqttUsername, AppConfig.mqttPassword)
           .withClientIdentifier(clientId)
-          .startClean()
-          .withWillQos(MqttQos.atLeastOnce);
+          .startClean();
 
     try {
       await _client!.connect();

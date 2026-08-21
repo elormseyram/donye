@@ -15,6 +15,7 @@ class AlertsRemoteDataSource implements IAlertsRemoteDataSource {
 
   @override
   Stream<List<AlertModel>> streamActiveAlerts(String bikeId) {
+    if (_client.auth.currentSession == null) return Stream.value([]);
     return _client
         .from('alerts')
         .stream(primaryKey: ['id'])

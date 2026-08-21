@@ -16,6 +16,17 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
 
   @override
   Future<BikeModel> getBike(String bikeId) async {
+    if (_client.auth.currentSession == null) {
+      return BikeModel(
+        id: bikeId,
+        serialNumber: 'SN-DEV-001',
+        model: 'SheRides E-Bike Pro',
+        registrationNumber: 'GR-2025-001',
+        batteryCapacityKwh: 0.72,
+        lastServiceDate: '2025-01-15',
+        status: 'active',
+      );
+    }
     try {
       final row = await _client
           .from('bikes')

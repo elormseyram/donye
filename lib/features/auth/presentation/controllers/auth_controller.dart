@@ -99,8 +99,7 @@ class AuthController extends AutoDisposeNotifier<AuthState> {
   void _connectMqtt(RiderEntity rider) {
     final bikeId = rider.assignedBikeId;
     if (bikeId == null) return;
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
-    if (token == null) return;
+    final token = Supabase.instance.client.auth.currentSession?.accessToken ?? 'dev-token';
     ref.read(mqttServiceProvider).connect(bikeId, token);
   }
 

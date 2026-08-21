@@ -32,19 +32,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   static const _pages = [
     _OnboardingPage(
-      animation: 'assets/animations/onboarding_1.json',
+      animation: 'lib/assets/animations/onboarding_1.json',
       title: 'Smart Bike Monitoring',
       subtitle:
           'Get real-time insights on your battery, speed, temperature, and motor health — all in one place.',
     ),
     _OnboardingPage(
-      animation: 'assets/animations/onboarding_2.json',
+      animation: 'lib/assets/animations/onboarding_2.json',
       title: 'Live GPS Tracking',
       subtitle:
           'Know exactly where your bike is at all times. Watch your route unfold as you ride.',
     ),
     _OnboardingPage(
-      animation: 'assets/animations/onboarding_3.json',
+      animation: 'lib/assets/animations/onboarding_3.json',
       title: 'Stay in Control',
       subtitle:
           'Lock, unlock, and manage your bike remotely. Receive instant alerts the moment anything needs attention.',

@@ -19,7 +19,7 @@ final _devRider = RiderModel(
   fullName: 'Test Rider',
   phoneNumber: '+233200000000',
   avatarUrl: null,
-  assignedBikeId: null,
+  assignedBikeId: 'dev-001',
   createdAt: DateTime(2025),
   isActive: true,
 );
@@ -83,15 +83,22 @@ class AuthRepositoryImpl implements IAuthRepository {
       await _local.clearRiderCache();
       return const Right(unit);
     }
+
+    Failure? failure;
     try {
       await _remote.logout();
-      await _local.clearRiderCache();
-      return const Right(unit);
     } on app.AppAuthException catch (e) {
-      return Left(AppAuthFailure(e.message));
+      failure = AppAuthFailure(e.message);
     } catch (e) {
-      return Left(UnexpectedFailure(e.toString()));
+      failure = UnexpectedFailure(e.toString());
     }
+
+    // A failed network request must not leave the rider signed in locally.
+    // Supabase may already have removed its persisted session, and retaining
+    // this cache would cause getCurrentRider/authStateStream to restore access.
+    await _local.clearRiderCache();
+
+    return failure == null ? const Right(unit) : Left(failure);
   }
 
   @override

@@ -1,0 +1,277 @@
+---
+query: "Create a detailed Mermaid system architecture diagram for a smart logistics
+  and IoT fleet management platform called donye Fleet”.\r
+
+  \r
+
+  The diagram should clearly visualize the full system structure, data flow,
+  actors, backend services, IoT communication, telemetry monitoring, and
+  mobile/web platform interactions.\r
+
+  \r
+
+  The system includes:\r
+
+  \r
+
+  * Customer mobile/web platform\r
+
+  * Rider mobile app\r
+
+  * Vendor dashboard\r
+
+  * Admin fleet dashboard\r
+
+  * IoT enabled electric bikes\r
+
+  * Telemetry monitoring system\r
+
+  * Real time tracking\r
+
+  * Remote bike controls\r
+
+  * Supabase backend infrastructure\r
+
+  \r
+
+  The diagram should include the following components and flows:\r
+
+  \r
+
+  Users:\r
+
+  \r
+
+  1. Customers\r
+
+  2. Riders\r
+
+  3. Vendors\r
+
+  4. Admin/Fleet Managers\r
+
+  \r
+
+  Frontend Systems:\r
+
+  \r
+
+  * Customer App\r
+
+  * Rider App\r
+
+  * Vendor Dashboard\r
+
+  * Admin Dashboard\r
+
+  \r
+
+  Backend:\r
+
+  \r
+
+  * API Layer\r
+
+  * Authentication System\r
+
+  * Supabase Database\r
+
+  * Realtime Engine\r
+
+  * Notification System\r
+
+  * Payment Processing System\r
+
+  * Analytics Engine\r
+
+  \r
+
+  IoT and Telemetry:\r
+
+  \r
+
+  * GPS Tracking\r
+
+  * Battery Monitoring\r
+
+  * Voltage Monitoring\r
+
+  * Distance Tracking\r
+
+  * Speed Tracking\r
+
+  * Ride History\r
+
+  * Bike Diagnostics\r
+
+  * Remote Lock/Unlock\r
+
+  * Anti Theft Controls\r
+
+  \r
+
+  Core Features:\r
+
+  \r
+
+  * Errands\r
+
+  * Pickup and Delivery\r
+
+  * Order Tracking\r
+
+  * Rider Assignment\r
+
+  * Fleet Monitoring\r
+
+  * Maintenance Scheduling\r
+
+  * Vendor Order Management\r
+
+  * Weekly Meal Planning\r
+
+  * Food Reviews\r
+
+  * Community Forum\r
+
+  \r
+
+  Data Flow:\r
+
+  \r
+
+  * Customers place orders\r
+
+  * Vendors receive orders\r
+
+  * Riders receive assignments\r
+
+  * IoT devices send telemetry data to backend\r
+
+  * Admin dashboard monitors bikes and riders\r
+
+  * Notifications are sent in real time\r
+
+  * Payment processing updates transactions\r
+
+  \r
+
+  Technical Stack Labels:\r
+
+  \r
+
+  * Flutter Mobile App\r
+
+  * React Dashboard\r
+
+  * Supabase Backend\r
+
+  * MQTT or Firebase for IoT Communication\r
+
+  * Google Maps API\r
+
+  * Push Notification Service\r
+
+  \r
+
+  Diagram Style:\r
+
+  \r
+
+  * Clean and professional\r
+
+  * Structured hierarchy\r
+
+  * Modern startup system architecture style\r
+
+  * Clear arrows and labels\r
+
+  * Modular grouping\r
+
+  * Investor presentation quality\r
+
+  \r
+
+  Generate the result as a complete Mermaid flowchart or architecture diagram
+  with properly grouped services, actors, databases, APIs, and telemetry
+  systems.\r\n"
+references:
+  - |+
+    Reference: <skills>
+    Here is a list of skills that contain domain specific knowledge on a variety of topics.
+    Each skill comes with a description of the topic and a file path that contains the detailed instructions.
+    When a user asks you to perform a task that falls within the domain of a skill, use the #tool:read/readFile tool to acquire the full instructions from the file URI.
+    <skill>
+    <name>get-search-view-results</name>
+    <description>Get the current search results from the Search view in VS Code</description>
+    <file>c:\Users\Elorm\Desktop\ELORMS'\Microsoft VS Code\034f571df5\resources\app\extensions\copilot\assets\prompts\skills\get-search-view-results\SKILL.md</file>
+    </skill>
+    <skill>
+    <name>agent-customization</name>
+    <description>**WORKFLOW SKILL** — Create, update, review, fix, or debug VS Code agent customization files (.instructions.md, .prompt.md, .agent.md, SKILL.md, copilot-instructions.md, AGENTS.md). USE FOR: saving coding preferences; troubleshooting why instructions/skills/agents are ignored or not invoked; configuring applyTo patterns; defining tool restrictions; creating custom agent modes or specialized workflows; packaging domain knowledge; fixing YAML frontmatter syntax. DO NOT USE FOR: general coding questions (use default agent); runtime debugging or error diagnosis; MCP server configuration (use MCP docs directly); VS Code extension development. INVOKES: file system tools (read/write customization files), ask-questions tool (interview user for requirements), subagents for codebase exploration. FOR SINGLE OPERATIONS: For quick YAML frontmatter fixes or creating a single file from a known pattern, edit the file directly — no skill needed.</description>
+    <file>c:\Users\Elorm\Desktop\ELORMS'\Microsoft VS Code\034f571df5\resources\app\extensions\copilot\assets\prompts\skills\agent-customization\SKILL.md</file>
+    </skill>
+    </skills>
+
+
+    <agents>
+    Here is a list of agents that can be used when running a subagent.
+    Each agent has optionally a description with the agent's purpose and expertise. When asked to run a subagent, choose the most appropriate agent from this list.
+    Use the #tool:agent/runSubagent tool with the agent name to run the subagent.
+    <agent>
+    <name>Explore</name>
+    <description>Fast read-only codebase exploration and Q&A subagent. Prefer over manually chaining multiple search and file-reading operations to avoid cluttering the main conversation. Safe to call in parallel. Specify thoroughness: quick, medium, or thorough.</description>
+    <argumentHint>Describe WHAT you're looking for and desired thoroughness (quick/medium/thorough)</argumentHint>
+    </agent>
+    </agents>
+
+generationTime: 2026-05-12T15:05:46.400Z
+---
+architecture-beta
+    group frontend(cloud)[Frontend Systems]
+    group backend(cloud)[Backend Services]
+    group iot(devices)[IoT & Telemetry]
+    group database(database)[Database]
+
+    service customer_app(mobile)[Customer App (Flutter)] in frontend
+    service rider_app(mobile)[Rider App (Flutter)] in frontend
+    service vendor_dashboard(web)[Vendor Dashboard (React)] in frontend
+    service admin_dashboard(web)[Admin Dashboard (React)] in frontend
+
+    service api_layer(server)[API Layer] in backend
+    service auth_system(lock)[Authentication System] in backend
+    service realtime_engine(sync)[Realtime Engine] in backend
+    service notification_system(bell)[Notification System] in backend
+    service payment_system(card)[Payment Processing System] in backend
+    service analytics_engine(chart)[Analytics Engine] in backend
+
+    service supabase_db(database)[Supabase Database] in database
+
+    service gps_tracking(gps)[GPS Tracking] in iot
+    service battery_monitor(battery)[Battery Monitoring] in iot
+    service diagnostics(tools)[Bike Diagnostics] in iot
+    service remote_controls(remote)[Remote Lock/Unlock] in iot
+
+    customer_app:B --> T:api_layer
+    rider_app:B --> T:api_layer
+    vendor_dashboard:B --> T:api_layer
+    admin_dashboard:B --> T:api_layer
+
+    api_layer:R --> L:auth_system
+    api_layer:R --> L:realtime_engine
+    api_layer:R --> L:notification_system
+    api_layer:R --> L:payment_system
+    api_layer:R --> L:analytics_engine
+
+    auth_system:B --> T:supabase_db
+    realtime_engine:B --> T:supabase_db
+    notification_system:B --> T:supabase_db
+    payment_system:B --> T:supabase_db
+    analytics_engine:B --> T:supabase_db
+
+    gps_tracking:B --> T:api_layer
+    battery_monitor:B --> T:api_layer
+    diagnostics:B --> T:api_layer
+    remote_controls:B --> T:api_layer
+
+    api_layer:B --> T:supabase_db

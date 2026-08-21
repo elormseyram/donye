@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_config.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/routes/route_names.dart';
 import '../providers/tracking_provider.dart';
@@ -62,8 +61,6 @@ class _LiveGpsTrackingScreenState
         ),
     };
 
-    final mapsReady = AppConfig.googleMapsApiKey != 'YOUR_GOOGLE_MAPS_API_KEY';
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Live Tracking'),
@@ -74,9 +71,7 @@ class _LiveGpsTrackingScreenState
           ),
         ],
       ),
-      body: !mapsReady
-          ? _MapPlaceholder()
-          : Stack(
+      body: Stack(
         children: [
           GoogleMap(
             initialCameraPosition: CameraPosition(
@@ -144,56 +139,5 @@ class _LiveGpsTrackingScreenState
   void dispose() {
     _mapController?.dispose();
     super.dispose();
-  }
-}
-
-class _MapPlaceholder extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFE8EAF0),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(
-                  Icons.map_outlined,
-                  size: 36,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Map not configured',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.onSurface,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Add your Google Maps API key in\nAppConfig.googleMapsApiKey to enable live tracking.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.onSurfaceSecondary,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/routes/route_names.dart';
+import '../../../telemetry/presentation/providers/telemetry_provider.dart';
 import '../providers/auth_provider.dart';
 import 'onboarding_screen.dart';
 
@@ -39,6 +41,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (!mounted) return;
 
     if (isAuth) {
+      final rider = await ref.read(currentRiderProvider.future);
+      final bikeId = rider?.assignedBikeId;
+      if (bikeId != null) {
+        final token = Supabase.instance.client.auth.currentSession?.accessToken ?? 'dev-token';
+        ref.read(mqttServiceProvider).connect(bikeId, token);
+      }
+      if (!mounted) return;
       context.goNamed(RouteNames.dashboard);
     } else if (!isOnboardingComplete()) {
       context.goNamed(RouteNames.onboarding);

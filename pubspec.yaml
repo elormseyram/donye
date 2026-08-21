@@ -83,7 +83,6 @@ flutter:
   assets:
     - lib/assets/images/
     - lib/assets/animations/
-    - lib/assets/animations/Delivery guy.json
 
 flutter_native_splash:
   color: "#FFFFFF"

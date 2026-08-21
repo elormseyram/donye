@@ -187,6 +187,7 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                   await ref
                       .read(authControllerProvider.notifier)
                       .logout();
+                  if (context.mounted) context.goNamed(RouteNames.login);
                 },
               ),
               const SizedBox(height: AppSpacing.xl),
