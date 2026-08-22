@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -11,6 +12,7 @@ abstract class IAuthRemoteDataSource {
     required String password,
     required String fullName,
     required String phoneNumber,
+    required String bikeSerialNumber,
   });
   Future<void> logout();
   Future<void> forgotPassword(String email);
@@ -20,8 +22,9 @@ abstract class IAuthRemoteDataSource {
 
 @LazySingleton(as: IAuthRemoteDataSource)
 class AuthRemoteDataSource implements IAuthRemoteDataSource {
-  AuthRemoteDataSource(this._client);
+  AuthRemoteDataSource(this._client, this._dio);
   final SupabaseClient _client;
+  final Dio _dio;
 
   @override
   Future<RiderModel> login({
@@ -52,29 +55,42 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
     required String password,
     required String fullName,
     required String phoneNumber,
+    required String bikeSerialNumber,
   }) async {
     try {
-      final response = await _client.auth.signUp(
-        email: email,
-        password: password,
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/api/v1/auth/signup',
         data: {
-          'full_name': fullName,
-          'phone_number': phoneNumber,
+          'email': email,
+          'password': password,
+          'fullName': fullName,
+          'phoneNumber': phoneNumber,
+          'bikeSerialNumber': bikeSerialNumber.trim(),
         },
       );
-      if (response.user == null) {
-        throw const app.AppAuthException(message: 'Signup failed. Please try again.');
+
+      final payload = response.data?['data'] as Map<String, dynamic>?;
+      final session = payload?['session'] as Map<String, dynamic>?;
+      final rider = payload?['rider'] as Map<String, dynamic>?;
+      final refreshToken = session?['refreshToken'] as String?;
+      if (rider == null || refreshToken == null) {
+        throw const app.AppAuthException(
+          message: 'The admin server returned an invalid signup response.',
+        );
       }
-      // Upsert rider profile row
-      await _client.from('riders').upsert({
-        'id': response.user!.id,
-        'email': email,
-        'full_name': fullName,
-        'phone_number': phoneNumber,
-        'is_active': true,
-        'created_at': DateTime.now().toIso8601String(),
-      });
-      return _fetchRiderProfile(response.user!.id);
+
+      // The admin backend creates the rider and assigns the bike. Import its
+      // session so existing Supabase realtime/RLS data sources keep working.
+      await _client.auth.setSession(refreshToken);
+      return RiderModel.fromJson(rider);
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final message = data is Map<String, dynamic>
+          ? (data['error'] ?? data['message'])?.toString()
+          : null;
+      throw app.AppAuthException(
+        message: message ?? 'Could not connect to the Donye admin server.',
+      );
     } on app.AppAuthException {
       rethrow;
     } on AuthException catch (e) {

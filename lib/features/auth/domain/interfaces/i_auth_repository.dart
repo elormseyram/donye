@@ -13,6 +13,7 @@ abstract class IAuthRepository {
     required String password,
     required String fullName,
     required String phoneNumber,
+    required String bikeSerialNumber,
   });
 
   Future<Either<Failure, Unit>> logout();

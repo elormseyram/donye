@@ -25,6 +25,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
+  final _bikeSerialCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
 
@@ -33,6 +34,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     _nameCtrl.dispose();
     _phoneCtrl.dispose();
     _emailCtrl.dispose();
+    _bikeSerialCtrl.dispose();
     _passwordCtrl.dispose();
     _confirmCtrl.dispose();
     super.dispose();
@@ -45,6 +47,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           password: _passwordCtrl.text,
           fullName: _nameCtrl.text.trim(),
           phoneNumber: _phoneCtrl.text.trim(),
+          bikeSerialNumber: _bikeSerialCtrl.text.trim(),
         );
     if (!mounted) return;
     if (success) {
@@ -113,6 +116,23 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         validator: AppValidators.email,
                         prefixIcon: const Icon(Icons.mail_outline,
                             size: 20, color: AppColors.onSurfaceSecondary),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      SrTextField(
+                        controller: _bikeSerialCtrl,
+                        label: 'Bike serial number',
+                        hint: 'SN-123456',
+                        textInputAction: TextInputAction.next,
+                        textCapitalization: TextCapitalization.characters,
+                        validator: (value) => AppValidators.required(
+                          value,
+                          field: 'Bike serial number',
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.electric_bike_outlined,
+                          size: 20,
+                          color: AppColors.onSurfaceSecondary,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       SrPasswordField(

@@ -63,6 +63,7 @@ class AuthController extends AutoDisposeNotifier<AuthState> {
     required String password,
     required String fullName,
     required String phoneNumber,
+    required String bikeSerialNumber,
   }) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     final useCase = ref.read(signupUseCaseProvider);
@@ -71,6 +72,7 @@ class AuthController extends AutoDisposeNotifier<AuthState> {
       password: password,
       fullName: fullName,
       phoneNumber: phoneNumber,
+      bikeSerialNumber: bikeSerialNumber,
     );
     return result.fold(
       (failure) {

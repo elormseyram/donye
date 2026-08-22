@@ -14,11 +14,13 @@ class SignupUseCase {
     required String password,
     required String fullName,
     required String phoneNumber,
+    required String bikeSerialNumber,
   }) =>
       _repository.signup(
         email: email,
         password: password,
         fullName: fullName,
         phoneNumber: phoneNumber,
+        bikeSerialNumber: bikeSerialNumber,
       );
 }

@@ -60,6 +60,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String password,
     required String fullName,
     required String phoneNumber,
+    required String bikeSerialNumber,
   }) async {
     try {
       final model = await _remote.signup(
@@ -67,6 +68,7 @@ class AuthRepositoryImpl implements IAuthRepository {
         password: password,
         fullName: fullName,
         phoneNumber: phoneNumber,
+        bikeSerialNumber: bikeSerialNumber,
       );
       await _local.cacheRiderJson(model.toJson());
       return Right(model.toEntity());

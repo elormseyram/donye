@@ -12,6 +12,7 @@ class SrTextField extends StatelessWidget {
     this.obscureText = false,
     this.keyboardType,
     this.textInputAction,
+    this.textCapitalization = TextCapitalization.none,
     this.onChanged,
     this.onFieldSubmitted,
     this.validator,
@@ -30,6 +31,7 @@ class SrTextField extends StatelessWidget {
   final bool obscureText;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
+  final TextCapitalization textCapitalization;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onFieldSubmitted;
   final FormFieldValidator<String>? validator;
@@ -61,6 +63,7 @@ class SrTextField extends StatelessWidget {
           obscureText: obscureText,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
+          textCapitalization: textCapitalization,
           onChanged: onChanged,
           onFieldSubmitted: onFieldSubmitted,
           validator: validator,

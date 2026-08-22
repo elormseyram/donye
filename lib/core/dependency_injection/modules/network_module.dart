@@ -10,13 +10,10 @@ abstract class NetworkModule {
   Dio dio() {
     final d = Dio(
       BaseOptions(
-        baseUrl: AppConfig.supabaseUrl,
+        baseUrl: AppConfig.backendBaseUrl,
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 30),
-        headers: {
-          'apikey': AppConfig.supabaseAnonKey,
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
       ),
     );
     d.interceptors.addAll([
