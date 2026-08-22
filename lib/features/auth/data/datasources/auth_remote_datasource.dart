@@ -120,7 +120,7 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
           rider['id'].toString(),
         );
         assignment = directAssignment;
-        bike = directAssignment?['fleet_bikes'];
+        bike = directAssignment?['bike'] ?? directAssignment?['fleet_bikes'];
       }
       PortalSessionCache.bike = bike is Map
           ? Map<String, dynamic>.from(bike)
@@ -266,7 +266,8 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
               _portalRider!.id,
             );
             assignment = directAssignment;
-            bike = directAssignment?['fleet_bikes'];
+            bike =
+                directAssignment?['bike'] ?? directAssignment?['fleet_bikes'];
           }
           if (bike is Map) {
             PortalSessionCache.bike = Map<String, dynamic>.from(bike);
@@ -281,6 +282,25 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
               ?.toString();
           _portalRider = _portalRider!.copyWith(
             assignedBikeId: assignedBikeId,
+          );
+          await _persistPortalSession();
+        }
+        final dedicatedAssignment = await _fetchDirectPortalAssignment(
+          _portalRider!.id,
+        );
+        if (dedicatedAssignment != null) {
+          final dedicatedBike = dedicatedAssignment['bike'] ??
+              dedicatedAssignment['fleet_bikes'];
+          if (dedicatedBike is Map) {
+            PortalSessionCache.bike =
+                Map<String, dynamic>.from(dedicatedBike);
+          }
+          final dedicatedBikeId = (dedicatedAssignment['bikeId'] ??
+                  dedicatedAssignment['bike_id'] ??
+                  (dedicatedBike is Map ? dedicatedBike['id'] : null))
+              ?.toString();
+          _portalRider = _portalRider!.copyWith(
+            assignedBikeId: dedicatedBikeId,
           );
           await _persistPortalSession();
         }
@@ -443,6 +463,26 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
     String riderId,
   ) async {
     final token = _portalSessionToken;
+    try {
+      final response = await _portalClient.functions.invoke(
+        'rider-portal',
+        body: {
+          'action': 'bike_assignment',
+          'riderId': riderId,
+          'email': _portalRider?.email ?? PortalSessionCache.riderEmail,
+          if (token != null && token.isNotEmpty) 'sessionToken': token,
+        },
+      );
+      final envelope = response.data;
+      final data = envelope is Map && envelope['ok'] == true
+          ? envelope['data']
+          : null;
+      if (data is Map && data['assignment'] is Map) {
+        return Map<String, dynamic>.from(data['assignment'] as Map);
+      }
+    } catch (_) {
+      // Fall through to the JWT/RLS query for compatible portal sessions.
+    }
     if (token == null || token.isEmpty) return null;
     try {
       final authenticatedPortal = SupabaseClient(

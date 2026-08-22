@@ -1255,6 +1255,42 @@ serve(async (req) => {
       return ok({ data: { bike: saved.data, assigned: action === 'admin_save_and_assign_fleet_bike' } })
     }
 
+    if (action === 'bike_assignment') {
+      const riderId = typeof body.riderId === 'string' ? body.riderId : ''
+      const email = typeof body.email === 'string' ? body.email : ''
+      const v = await assertRiderEmail(sb, riderId, email, riderAuthOpts)
+      if (!v.ok) return fail(v.error)
+      const { data: assignment, error: assignmentError } = await sb
+        .from('rider_bike_assignments')
+        .select('id,bike_id,assigned_at,notes,fleet_bikes(*)')
+        .eq('rider_id', v.rider.id)
+        .is('returned_at', null)
+        .order('assigned_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (assignmentError) return fail(formatDbErr(assignmentError))
+      if (!assignment) {
+        return ok({ data: { assignedBikeId: null, assignment: null, bike: null } })
+      }
+      const joinedBike = (assignment as Record<string, unknown>).fleet_bikes
+      const bike = Array.isArray(joinedBike)
+        ? (joinedBike[0] as Record<string, unknown> | undefined) ?? null
+        : (joinedBike as Record<string, unknown> | null) ?? null
+      return ok({
+        data: {
+          assignedBikeId: assignment.bike_id,
+          assignment: {
+            id: assignment.id,
+            bikeId: assignment.bike_id,
+            assignedAt: assignment.assigned_at,
+            notes: assignment.notes,
+            bike,
+          },
+          bike,
+        },
+      })
+    }
+
     if (action === 'update_bike_battery') {
       return fail('Bike specifications are managed by Dornye administrators')
     }
