@@ -38,12 +38,18 @@ final authStateProvider = StreamProvider<bool>((ref) {
 });
 
 /// Fetches and caches the current rider profile.
-final currentRiderProvider = FutureProvider<RiderEntity?>((ref) async {
+final currentRiderProvider = StreamProvider<RiderEntity?>((ref) async* {
   final isAuth = await ref.watch(authStateProvider.future);
-  if (!isAuth) return null;
+  if (!isAuth) {
+    yield null;
+    return;
+  }
   final useCase = ref.watch(getCurrentRiderUseCaseProvider);
-  final result = await useCase();
-  return result.fold((_) => null, (rider) => rider);
+  while (true) {
+    final result = await useCase();
+    yield result.fold((_) => null, (rider) => rider);
+    await Future<void>.delayed(const Duration(seconds: 30));
+  }
 });
 
 /// Derived: the assigned bike ID of the current rider.

@@ -2,6 +2,7 @@ import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../auth/data/models/rider_model.dart';
+import '../../../auth/data/datasources/portal_session_cache.dart';
 import '../models/bike_model.dart';
 
 abstract class IProfileRemoteDataSource {
@@ -16,15 +17,39 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
 
   @override
   Future<BikeModel> getBike(String bikeId) async {
-    if (_client.auth.currentSession == null) {
+    final portalBike = PortalSessionCache.bike;
+    if (portalBike != null) {
       return BikeModel(
         id: bikeId,
-        serialNumber: 'SN-DEV-001',
-        model: 'SheRides E-Bike Pro',
-        registrationNumber: 'GR-2025-001',
-        batteryCapacityKwh: 0.72,
-        lastServiceDate: '2025-01-15',
-        status: 'active',
+        serialNumber: (portalBike['serial_number'] ??
+                portalBike['serialNumber'] ??
+                portalBike['asset_tag'] ??
+                portalBike['assetTag'] ??
+                portalBike['bike_number'] ??
+                portalBike['bikeNumber'] ??
+                portalBike['code'] ??
+                '')
+            .toString(),
+        model: (portalBike['model'] ?? portalBike['bike_model'] ?? 'Electric bike')
+            .toString(),
+        registrationNumber: (portalBike['registration_number'] ??
+                portalBike['registrationNumber'] ??
+                portalBike['registration'] ??
+                portalBike['plate_number'] ??
+                '')
+            .toString(),
+        batteryCapacityKwh: double.tryParse(
+              (portalBike['battery_capacity_kwh'] ??
+                      portalBike['batteryCapacityKwh'] ??
+                      0)
+                  .toString(),
+            ) ??
+            0,
+        lastServiceDate: (portalBike['last_service_date'] ??
+                portalBike['lastServiceDate'] ??
+                DateTime.now().toIso8601String())
+            .toString(),
+        status: (portalBike['status'] ?? 'active').toString(),
       );
     }
     try {

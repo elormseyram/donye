@@ -6,6 +6,7 @@ import '../../../../core/widgets/sr_app_bar.dart';
 import '../../../../core/widgets/sr_empty_state.dart';
 import '../../../../core/widgets/sr_error_widget.dart';
 import '../../../../core/widgets/sr_skeleton.dart';
+import '../../../../core/widgets/dornye_logo.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/bike_details_card.dart';
 
@@ -31,7 +32,7 @@ class AssignedBikeDetailsScreen extends ConsumerWidget {
           if (bike == null) {
             return const Center(
               child: SrEmptyState(
-                icon: Icons.electric_bike_outlined,
+                iconWidget: DornyeLogo(size: 64),
                 title: 'No bike assigned',
                 subtitle: 'Contact your operator to get a bike assigned.',
               ),

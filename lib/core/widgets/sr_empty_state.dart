@@ -8,12 +8,14 @@ class SrEmptyState extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.icon = Icons.inbox_outlined,
+    this.iconWidget,
     this.action,
   });
 
   final String title;
   final String? subtitle;
   final IconData icon;
+  final Widget? iconWidget;
   final Widget? action;
 
   @override
@@ -24,7 +26,7 @@ class SrEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 52, color: AppColors.outline),
+            iconWidget ?? Icon(icon, size: 52, color: AppColors.outline),
             const SizedBox(height: AppSpacing.lg),
             Text(
               title,

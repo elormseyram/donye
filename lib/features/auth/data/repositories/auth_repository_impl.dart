@@ -11,18 +11,6 @@ import '../models/rider_model.dart';
 // ---------------------------------------------------------------------------
 // Dev bypass — remove once Supabase is configured
 // ---------------------------------------------------------------------------
-const _devEmail = 'rider@sherides.com';
-const _devPassword = 'SheRides2025';
-final _devRider = RiderModel(
-  id: 'dev-001',
-  email: _devEmail,
-  fullName: 'Test Rider',
-  phoneNumber: '+233200000000',
-  avatarUrl: null,
-  assignedBikeId: 'dev-001',
-  createdAt: DateTime(2025),
-  isActive: true,
-);
 // ---------------------------------------------------------------------------
 
 @LazySingleton(as: IAuthRepository)
@@ -31,18 +19,11 @@ class AuthRepositoryImpl implements IAuthRepository {
   final IAuthRemoteDataSource _remote;
   final IAuthLocalDataSource _local;
 
-  bool get _isDevCached => _local.getCachedRiderJson() != null &&
-      (_local.getCachedRiderJson()?['id'] == 'dev-001');
-
   @override
   Future<Either<Failure, RiderEntity>> login({
     required String email,
     required String password,
   }) async {
-    if (email.trim() == _devEmail && password == _devPassword) {
-      await _local.cacheRiderJson(_devRider.toJson());
-      return Right(_devRider.toEntity());
-    }
     try {
       final model = await _remote.login(email: email, password: password);
       await _local.cacheRiderJson(model.toJson());
@@ -61,6 +42,9 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String fullName,
     required String phoneNumber,
     required String bikeSerialNumber,
+    required String bikeModel,
+    required String bikeRegistrationNumber,
+    required double batteryCapacityKwh,
   }) async {
     try {
       final model = await _remote.signup(
@@ -69,6 +53,9 @@ class AuthRepositoryImpl implements IAuthRepository {
         fullName: fullName,
         phoneNumber: phoneNumber,
         bikeSerialNumber: bikeSerialNumber,
+        bikeModel: bikeModel,
+        bikeRegistrationNumber: bikeRegistrationNumber,
+        batteryCapacityKwh: batteryCapacityKwh,
       );
       await _local.cacheRiderJson(model.toJson());
       return Right(model.toEntity());
@@ -81,11 +68,6 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<Either<Failure, Unit>> logout() async {
-    if (_isDevCached) {
-      await _local.clearRiderCache();
-      return const Right(unit);
-    }
-
     Failure? failure;
     try {
       await _remote.logout();
@@ -117,7 +99,6 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<Either<Failure, RiderEntity?>> getCurrentRider() async {
-    if (_isDevCached) return Right(_devRider.toEntity());
     try {
       final model = await _remote.getCurrentRider();
       if (model != null) {
@@ -139,6 +120,5 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Stream<bool> get authStateStream => _remote.authStateStream
-      .map((isRemoteAuth) => isRemoteAuth || _isDevCached);
+  Stream<bool> get authStateStream => _remote.authStateStream;
 }

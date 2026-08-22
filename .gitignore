@@ -32,7 +32,11 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
-app_config.dart
+config/*.json
+!config/example.json
+supabase/.temp/
+supabase/.branches/
+supabase/.env
 
 # Symbolication related
 app.*.symbols

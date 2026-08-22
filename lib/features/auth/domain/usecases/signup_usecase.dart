@@ -15,6 +15,9 @@ class SignupUseCase {
     required String fullName,
     required String phoneNumber,
     required String bikeSerialNumber,
+    required String bikeModel,
+    required String bikeRegistrationNumber,
+    required double batteryCapacityKwh,
   }) =>
       _repository.signup(
         email: email,
@@ -22,5 +25,8 @@ class SignupUseCase {
         fullName: fullName,
         phoneNumber: phoneNumber,
         bikeSerialNumber: bikeSerialNumber,
+        bikeModel: bikeModel,
+        bikeRegistrationNumber: bikeRegistrationNumber,
+        batteryCapacityKwh: batteryCapacityKwh,
       );
 }

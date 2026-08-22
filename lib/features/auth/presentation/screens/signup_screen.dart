@@ -10,6 +10,7 @@ import '../../../../core/widgets/sr_button.dart';
 import '../../../../core/widgets/sr_scaffold.dart';
 import '../../../../core/widgets/sr_snackbar.dart';
 import '../../../../core/widgets/sr_text_field.dart';
+import '../../../../core/widgets/dornye_logo.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_form_card.dart';
 
@@ -26,6 +27,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _phoneCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _bikeSerialCtrl = TextEditingController();
+  final _bikeModelCtrl = TextEditingController();
+  final _bikeRegistrationCtrl = TextEditingController();
+  final _batteryCapacityCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
 
@@ -35,6 +39,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     _phoneCtrl.dispose();
     _emailCtrl.dispose();
     _bikeSerialCtrl.dispose();
+    _bikeModelCtrl.dispose();
+    _bikeRegistrationCtrl.dispose();
+    _batteryCapacityCtrl.dispose();
     _passwordCtrl.dispose();
     _confirmCtrl.dispose();
     super.dispose();
@@ -48,6 +55,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           fullName: _nameCtrl.text.trim(),
           phoneNumber: _phoneCtrl.text.trim(),
           bikeSerialNumber: _bikeSerialCtrl.text.trim(),
+          bikeModel: _bikeModelCtrl.text.trim(),
+          bikeRegistrationNumber: _bikeRegistrationCtrl.text.trim(),
+          batteryCapacityKwh: double.parse(_batteryCapacityCtrl.text.trim()),
         );
     if (!mounted) return;
     if (success) {
@@ -128,11 +138,50 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           value,
                           field: 'Bike serial number',
                         ),
-                        prefixIcon: const Icon(
-                          Icons.electric_bike_outlined,
-                          size: 20,
-                          color: AppColors.onSurfaceSecondary,
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: DornyeLogo(size: 20),
                         ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      SrTextField(
+                        controller: _bikeModelCtrl,
+                        label: 'Bike model',
+                        hint: 'Dornye E-Bike',
+                        textInputAction: TextInputAction.next,
+                        validator: (value) => AppValidators.required(
+                          value,
+                          field: 'Bike model',
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      SrTextField(
+                        controller: _bikeRegistrationCtrl,
+                        label: 'Registration number',
+                        hint: 'GR-1234-26',
+                        textInputAction: TextInputAction.next,
+                        textCapitalization: TextCapitalization.characters,
+                        validator: (value) => AppValidators.required(
+                          value,
+                          field: 'Registration number',
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      SrTextField(
+                        controller: _batteryCapacityCtrl,
+                        label: 'Battery capacity (kWh)',
+                        hint: '2.5',
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        textInputAction: TextInputAction.next,
+                        validator: (value) {
+                          final capacity = double.tryParse(value?.trim() ?? '');
+                          if (capacity == null || capacity <= 0) {
+                            return 'Enter a valid battery capacity';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       SrPasswordField(

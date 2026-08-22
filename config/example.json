@@ -1,0 +1,11 @@
+{
+  "BACKEND_BASE_URL": "https://api.example.com",
+  "SUPABASE_URL": "https://your-app-project.supabase.co",
+  "SUPABASE_PUBLISHABLE_KEY": "your-publishable-key",
+  "DORNYE_PORTAL_URL": "https://your-portal-project.supabase.co",
+  "DORNYE_PORTAL_PUBLISHABLE_KEY": "your-portal-publishable-key",
+  "MQTT_BROKER_HOST": "your-broker.example.com",
+  "MQTT_USERNAME": "runtime-provisioned-username",
+  "MQTT_PASSWORD": "runtime-provisioned-password",
+  "GOOGLE_MAPS_API_KEY": "your-restricted-maps-key"
+}

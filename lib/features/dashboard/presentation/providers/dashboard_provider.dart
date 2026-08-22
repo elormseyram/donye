@@ -10,8 +10,8 @@ export '../../../telemetry/presentation/providers/telemetry_provider.dart'
     show latestTelemetryProvider;
 
 /// Convenience alias so dashboard widgets can watch one provider.
-final dashboardRiderProvider = FutureProvider<RiderEntity?>((ref) async {
-  return ref.watch(currentRiderProvider.future);
+final dashboardRiderProvider = Provider<AsyncValue<RiderEntity?>>((ref) {
+  return ref.watch(currentRiderProvider);
 });
 
 /// Live MQTT connection status backed by the real MqttService stream.

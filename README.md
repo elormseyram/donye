@@ -22,7 +22,8 @@ Signup goes through the backend so bike ownership is validated before the app
 imports the returned Supabase session.
 
 Apply `final-backend1/001_donye_schema.sql`, followed by
-`final-backend1/002_unique_bike_assignment.sql`, then start the API:
+`final-backend1/002_unique_bike_assignment.sql` and
+`final-backend1/003_security_hardening.sql`, then start the API:
 
 ```powershell
 cd final-backend1
@@ -30,9 +31,35 @@ npm.cmd install
 npm.cmd start
 ```
 
-Android emulators use `http://10.0.2.2:3000` by default. For a physical device
-or deployed backend, pass a reachable URL:
+Copy `config/example.json` to `config/local.json`, fill in local values, and
+never commit that file. Run Flutter with:
+
+```powershell
+flutter run --dart-define-from-file=config/local.json
+```
+
+For production, use an HTTPS backend URL and your deployment secret manager.
+The Supabase publishable key is intentionally a client key; access is enforced
+by the RLS policies. Never put a service-role or secret key in Flutter.
+
+For a deployed backend, pass a reachable URL in the configuration file or with:
 
 ```powershell
 flutter run --dart-define=BACKEND_BASE_URL=https://api.example.com
 ```
+
+## Dornye rider portal function
+
+The admin-side Edge Function consumed by Flutter is located at
+`supabase/functions/rider-portal`. It authenticates riders, refreshes sessions,
+and returns the current `riders.assigned_bike_id` with the matching bike.
+
+Configure exact browser origins and deploy from this workspace:
+
+```powershell
+supabase secrets set ALLOWED_ORIGINS=https://admin.example.com,https://portal.example.com
+supabase functions deploy rider-portal --no-verify-jwt
+```
+
+Supabase automatically provides the function's URL and service-role secret at
+runtime. Do not add either credential to source control.

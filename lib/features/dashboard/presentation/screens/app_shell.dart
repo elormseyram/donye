@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/route_names.dart';
+import '../../../../core/widgets/dornye_logo.dart';
 import '../../../alerts/presentation/providers/alerts_provider.dart';
 
 class AppShell extends ConsumerWidget {
@@ -12,7 +13,7 @@ class AppShell extends ConsumerWidget {
   static const _tabs = [
     (icon: Icons.dashboard_outlined, active: Icons.dashboard, label: 'Dashboard', route: RouteNames.dashboard),
     (icon: Icons.location_on_outlined, active: Icons.location_on, label: 'Tracking', route: RouteNames.tracking),
-    (icon: Icons.electric_bike_outlined, active: Icons.electric_bike, label: 'Controls', route: RouteNames.bikeControl),
+    (icon: Icons.tune_outlined, active: Icons.tune, label: 'Controls', route: RouteNames.bikeControl),
     (icon: Icons.notifications_outlined, active: Icons.notifications, label: 'Alerts', route: RouteNames.alerts),
     (icon: Icons.bar_chart_outlined, active: Icons.bar_chart, label: 'Analytics', route: RouteNames.analytics),
   ];
@@ -46,8 +47,12 @@ class AppShell extends ConsumerWidget {
             final isAlertsTab = i == 3;
             final showBadge = isAlertsTab && unreadCount > 0;
 
-            Widget iconWidget = Icon(t.icon);
-            Widget activeIconWidget = Icon(t.active);
+            Widget iconWidget = i == 2
+                ? const DornyeLogo(size: 24)
+                : Icon(t.icon);
+            Widget activeIconWidget = i == 2
+                ? const DornyeLogo(size: 27)
+                : Icon(t.active);
 
             if (showBadge) {
               final badge = Badge(

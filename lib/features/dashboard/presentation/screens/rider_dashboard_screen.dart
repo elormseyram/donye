@@ -6,10 +6,12 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/widgets/sr_avatar.dart';
 import '../../../../core/widgets/sr_error_widget.dart';
 import '../../../../core/widgets/sr_snackbar.dart';
+import '../../../../core/widgets/dornye_logo.dart';
 import '../../../../core/routes/route_names.dart';
 import '../../../../shared/components/connection_status_banner.dart';
 import '../../../telemetry/domain/entities/telemetry_entity.dart';
 import '../../../telemetry/presentation/providers/telemetry_provider.dart';
+import '../../../rider_profile/presentation/providers/profile_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/telemetry_summary_card.dart';
 import '../widgets/bike_status_card.dart';
@@ -91,6 +93,7 @@ class _DashboardBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mqttConnected = ref.watch(mqttConnectionStatusProvider).valueOrNull?.isConnected ?? false;
+    final bikeAsync = ref.watch(currentBikeProvider);
 
     void sendCommand(String type) {
       if (!mqttConnected) {
@@ -160,7 +163,15 @@ class _DashboardBody extends ConsumerWidget {
                 odometer: telemetry?.odometer,
               ),
               const SizedBox(height: AppSpacing.md),
-              BikeStatusCard(isLoading: isLoading),
+              bikeAsync.when(
+                loading: () => const BikeStatusCard(isLoading: true),
+                error: (_, __) => const BikeStatusCard(),
+                data: (bike) => BikeStatusCard(
+                  bikeModel: bike?.model,
+                  serialNumber: bike?.serialNumber,
+                  registrationNumber: bike?.registrationNumber,
+                ),
+              ),
               const SizedBox(height: AppSpacing.md),
               _SectionHeader(title: 'Quick Actions'),
               const SizedBox(height: AppSpacing.sm),
@@ -245,24 +256,28 @@ class _NavGrid extends StatelessWidget {
         label: 'Tracking',
         route: RouteNames.tracking,
         color: AppColors.primary,
+        useLogo: false,
       ),
       (
-        icon: Icons.electric_bike_outlined,
+        icon: Icons.tune_outlined,
         label: 'Controls',
         route: RouteNames.bikeControl,
         color: AppColors.onSurface,
+        useLogo: true,
       ),
       (
         icon: Icons.build_outlined,
         label: 'Diagnostics',
         route: RouteNames.diagnostics,
         color: AppColors.warning,
+        useLogo: false,
       ),
       (
         icon: Icons.bar_chart_outlined,
         label: 'Analytics',
         route: RouteNames.analytics,
         color: AppColors.success,
+        useLogo: false,
       ),
     ];
 
@@ -279,6 +294,7 @@ class _NavGrid extends StatelessWidget {
               icon: item.icon,
               label: item.label,
               color: item.color,
+              useLogo: item.useLogo,
               onTap: () => context.goNamed(item.route),
             ),
           )
@@ -292,12 +308,14 @@ class _NavCard extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.color,
+    required this.useLogo,
     required this.onTap,
   });
 
   final IconData icon;
   final String label;
   final Color color;
+  final bool useLogo;
   final VoidCallback onTap;
 
   @override
@@ -316,7 +334,10 @@ class _NavCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: color),
+            if (useLogo)
+              const DornyeLogo(size: 22)
+            else
+              Icon(icon, size: 20, color: color),
             const SizedBox(width: AppSpacing.sm),
             Text(
               label,

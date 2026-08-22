@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:lottie/lottie.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/route_names.dart';
+import '../../../../core/widgets/dornye_logo.dart';
 
 const _onboardingKey = 'onboarding_complete';
 
@@ -216,13 +217,7 @@ class _LottieFallback extends StatelessWidget {
         color: AppColors.primary.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(24),
       ),
-      child: const Center(
-        child: Icon(
-          Icons.electric_bike_outlined,
-          size: 80,
-          color: AppColors.primary,
-        ),
-      ),
+      child: const Center(child: DornyeLogo(size: 96)),
     );
   }
 }

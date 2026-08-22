@@ -14,6 +14,9 @@ abstract class IAuthRepository {
     required String fullName,
     required String phoneNumber,
     required String bikeSerialNumber,
+    required String bikeModel,
+    required String bikeRegistrationNumber,
+    required double batteryCapacityKwh,
   });
 
   Future<Either<Failure, Unit>> logout();

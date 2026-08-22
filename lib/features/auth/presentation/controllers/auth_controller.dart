@@ -52,6 +52,8 @@ class AuthController extends AutoDisposeNotifier<AuthState> {
       },
       (rider) {
         state = state.copyWith(status: AuthStatus.authenticated, rider: rider);
+        ref.invalidate(authStateProvider);
+        ref.invalidate(currentRiderProvider);
         _connectMqtt(rider);
         return true;
       },
@@ -64,6 +66,9 @@ class AuthController extends AutoDisposeNotifier<AuthState> {
     required String fullName,
     required String phoneNumber,
     required String bikeSerialNumber,
+    required String bikeModel,
+    required String bikeRegistrationNumber,
+    required double batteryCapacityKwh,
   }) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     final useCase = ref.read(signupUseCaseProvider);
@@ -73,6 +78,9 @@ class AuthController extends AutoDisposeNotifier<AuthState> {
       fullName: fullName,
       phoneNumber: phoneNumber,
       bikeSerialNumber: bikeSerialNumber,
+      bikeModel: bikeModel,
+      bikeRegistrationNumber: bikeRegistrationNumber,
+      batteryCapacityKwh: batteryCapacityKwh,
     );
     return result.fold(
       (failure) {
@@ -84,6 +92,8 @@ class AuthController extends AutoDisposeNotifier<AuthState> {
       },
       (rider) {
         state = state.copyWith(status: AuthStatus.authenticated, rider: rider);
+        ref.invalidate(authStateProvider);
+        ref.invalidate(currentRiderProvider);
         _connectMqtt(rider);
         return true;
       },
@@ -95,6 +105,8 @@ class AuthController extends AutoDisposeNotifier<AuthState> {
     ref.read(mqttServiceProvider).disconnect();
     final useCase = ref.read(logoutUseCaseProvider);
     await useCase();
+    ref.invalidate(authStateProvider);
+    ref.invalidate(currentRiderProvider);
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 

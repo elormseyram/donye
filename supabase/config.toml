@@ -1,0 +1,6 @@
+project_id = "dornye-admin"
+
+[functions.rider-portal]
+# Login must be reachable before a rider has a JWT. The function validates all
+# authenticated actions itself with Supabase Auth.
+verify_jwt = false

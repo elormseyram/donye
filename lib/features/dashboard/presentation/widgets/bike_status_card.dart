@@ -4,6 +4,7 @@ import '../../../../../core/constants/app_spacing.dart';
 import '../../../../../core/widgets/sr_card.dart';
 import '../../../../../core/widgets/sr_status_badge.dart';
 import '../../../../../core/widgets/sr_divider.dart';
+import '../../../../../core/widgets/dornye_logo.dart';
 
 class BikeStatusCard extends StatelessWidget {
   const BikeStatusCard({
@@ -37,10 +38,9 @@ class BikeStatusCard extends StatelessWidget {
                   color: AppColors.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
-                  Icons.electric_bike,
-                  size: 22,
-                  color: AppColors.primary,
+                child: const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: DornyeLogo(size: 24),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),

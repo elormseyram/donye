@@ -10,6 +10,7 @@ import '../../../../core/widgets/sr_button.dart';
 import '../../../../core/widgets/sr_scaffold.dart';
 import '../../../../core/widgets/sr_snackbar.dart';
 import '../../../../core/widgets/sr_text_field.dart';
+import '../../../../core/widgets/dornye_logo.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_form_card.dart';
 
@@ -72,10 +73,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(
-                      Icons.electric_bike,
-                      color: AppColors.onPrimary,
-                      size: 22,
+                    child: const Padding(
+                      padding: EdgeInsets.all(6),
+                      child: DornyeLogo(size: 28),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),

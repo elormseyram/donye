@@ -9,9 +9,18 @@ import 'core/dependency_injection/injection_container.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  if (AppConfig.supabaseUrl.isEmpty ||
+      AppConfig.supabasePublishableKey.isEmpty ||
+      AppConfig.dornyePortalUrl.isEmpty ||
+      AppConfig.dornyePortalPublishableKey.isEmpty) {
+    throw StateError(
+      'Missing Supabase build configuration. Use --dart-define-from-file.',
+    );
+  }
+
   await Supabase.initialize(
     url: AppConfig.supabaseUrl,
-    anonKey: AppConfig.supabaseAnonKey,
+    anonKey: AppConfig.supabasePublishableKey,
   );
 
   await Hive.initFlutter();

@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/routes/route_names.dart';
+import '../../../../core/widgets/dornye_logo.dart';
 import '../../../telemetry/presentation/providers/telemetry_provider.dart';
 import '../providers/auth_provider.dart';
 import 'onboarding_screen.dart';
@@ -72,19 +73,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(
-                  Icons.electric_bike,
-                  color: AppColors.onPrimary,
-                  size: 40,
-                ),
-              ),
+              const DornyeLogo(size: 96),
               const SizedBox(height: AppSpacing.xxl),
               const Text(
                 'SheRides',
