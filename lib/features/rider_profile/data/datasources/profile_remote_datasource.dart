@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/constants/app_config.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../auth/data/models/rider_model.dart';
 import '../../../auth/data/datasources/portal_session_cache.dart';
@@ -7,13 +8,19 @@ import '../models/bike_model.dart';
 
 abstract class IProfileRemoteDataSource {
   Future<BikeModel> getBike(String bikeId);
+  Future<BikeModel> updateBatteryCapacity(String bikeId, double capacityKwh);
   Future<RiderModel> updateRider(Map<String, dynamic> data, String riderId);
 }
 
 @LazySingleton(as: IProfileRemoteDataSource)
 class ProfileRemoteDataSource implements IProfileRemoteDataSource {
-  const ProfileRemoteDataSource(this._client);
+  ProfileRemoteDataSource(this._client)
+      : _portalClient = SupabaseClient(
+          AppConfig.dornyePortalUrl,
+          AppConfig.dornyePortalPublishableKey,
+        );
   final SupabaseClient _client;
+  final SupabaseClient _portalClient;
 
   @override
   Future<BikeModel> getBike(String bikeId) async {
@@ -59,6 +66,56 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
           .eq('id', bikeId)
           .single();
       return BikeModel.fromJson(Map<String, dynamic>.from(row));
+    } on PostgrestException catch (e) {
+      throw ServerException(message: e.message);
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<BikeModel> updateBatteryCapacity(
+    String bikeId,
+    double capacityKwh,
+  ) async {
+    try {
+      final token = PortalSessionCache.sessionToken;
+      if (token != null) {
+        final response = await _portalClient.functions.invoke(
+          'rider-portal',
+          body: {
+            'action': 'update_bike_battery',
+            'riderId': PortalSessionCache.riderId,
+            'email': PortalSessionCache.riderEmail,
+            'sessionToken': token,
+            'batteryCapacityKwh': capacityKwh,
+          },
+        );
+        final envelope = response.data;
+        final data = envelope is Map && envelope['ok'] == true
+            ? envelope['data']
+            : null;
+        final bike = data is Map ? data['bike'] : null;
+        if (bike is! Map) {
+          throw ServerException(
+            message: envelope is Map
+                ? envelope['error']?.toString() ?? 'Could not update battery capacity'
+                : 'Could not update battery capacity',
+          );
+        }
+        PortalSessionCache.bike = Map<String, dynamic>.from(bike);
+        return getBike(bikeId);
+      }
+
+      final row = await _client
+          .from('bikes')
+          .update({'battery_capacity_kwh': capacityKwh})
+          .eq('id', bikeId)
+          .select()
+          .single();
+      return BikeModel.fromJson(Map<String, dynamic>.from(row));
+    } on ServerException {
+      rethrow;
     } on PostgrestException catch (e) {
       throw ServerException(message: e.message);
     } catch (e) {

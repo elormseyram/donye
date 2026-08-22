@@ -34,9 +34,15 @@ migrate_working_dir/
 /coverage/
 config/*.json
 !config/example.json
+**/.env
+**/.env.*
+!**/.env.example
 supabase/.temp/
 supabase/.branches/
 supabase/.env
+
+# Generated firmware artifacts can embed configured Wi-Fi credentials.
+bike_simulator/build/
 
 # Symbolication related
 app.*.symbols

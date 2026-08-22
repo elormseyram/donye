@@ -27,6 +27,21 @@ class ProfileRepositoryImpl implements IProfileRepository {
   }
 
   @override
+  Future<Either<Failure, BikeEntity>> updateBatteryCapacity(
+    String bikeId,
+    double capacityKwh,
+  ) async {
+    try {
+      final model = await _remote.updateBatteryCapacity(bikeId, capacityKwh);
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(UnexpectedFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, RiderEntity>> updateRiderProfile(
     RiderEntity rider,
   ) async {

@@ -10,11 +10,19 @@ import '../../../../core/widgets/dornye_logo.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/bike_details_card.dart';
 
-class AssignedBikeDetailsScreen extends ConsumerWidget {
+class AssignedBikeDetailsScreen extends ConsumerStatefulWidget {
   const AssignedBikeDetailsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AssignedBikeDetailsScreen> createState() =>
+      _AssignedBikeDetailsScreenState();
+}
+
+class _AssignedBikeDetailsScreenState
+    extends ConsumerState<AssignedBikeDetailsScreen> {
+
+  @override
+  Widget build(BuildContext context) {
     final bikeAsync = ref.watch(currentBikeProvider);
 
     return Scaffold(
@@ -40,10 +48,13 @@ class AssignedBikeDetailsScreen extends ConsumerWidget {
           }
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.md),
-            children: [BikeDetailsCard(bike: bike)],
+            children: [
+              BikeDetailsCard(bike: bike),
+            ],
           );
         },
       ),
     );
   }
+
 }

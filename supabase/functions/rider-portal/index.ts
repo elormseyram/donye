@@ -597,17 +597,11 @@ async function resolveStaffUserId(sb: SupabaseClient, authUid: string, authEmail
  */
 async function assertDashboardFleetAdmin(
   sb: SupabaseClient,
-  url: string,
-  anonKey: string,
   authHeader: string,
 ): Promise<{ ok: true; authUid: string; staffUserId: string } | { ok: false; error: string }> {
   if (!authHeader.startsWith('Bearer ')) return { ok: false, error: 'Unauthorized' }
   const jwt = authHeader.slice('Bearer '.length)
-  const authed = createClient(url, anonKey, {
-    global: { headers: { Authorization: authHeader } },
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
-  const { data: userData, error: authErr } = await authed.auth.getUser(jwt)
+  const { data: userData, error: authErr } = await sb.auth.getUser(jwt)
   if (authErr || !userData?.user?.id) return { ok: false, error: 'Unauthorized' }
   const portal = (userData.user.user_metadata as Record<string, unknown> | undefined)?.portal
   if (portal === 'business') {
@@ -1106,9 +1100,7 @@ serve(async (req) => {
 
     if (action === 'admin_set_rider_portal_password') {
       const authHeader = req.headers.get('Authorization') ?? ''
-      const anon = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-      if (!anon) return fail('Server misconfigured')
-      const gate = await assertDashboardFleetAdmin(sb, url, anon, authHeader)
+      const gate = await assertDashboardFleetAdmin(sb, authHeader)
       if (!gate.ok) return fail(gate.error)
       const rider_id = typeof body.rider_id === 'string' ? body.rider_id : ''
       const new_password = typeof body.new_password === 'string' ? body.new_password : ''
@@ -1125,9 +1117,7 @@ serve(async (req) => {
 
     if (action === 'admin_email_rider_portal_notice') {
       const authHeader = req.headers.get('Authorization') ?? ''
-      const anon = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-      if (!anon) return fail('Server misconfigured')
-      const gate = await assertDashboardFleetAdmin(sb, url, anon, authHeader)
+      const gate = await assertDashboardFleetAdmin(sb, authHeader)
       if (!gate.ok) return fail(gate.error)
       const rider_id = typeof body.rider_id === 'string' ? body.rider_id : ''
       if (!rider_id) return fail('rider_id required')
@@ -1173,6 +1163,100 @@ serve(async (req) => {
         return ok({ data: { emailed: false as const, notice: sent.error, fallback_url: resetUrl, fallback_otp: otp } })
       }
       return ok({ data: { emailed: true as const } })
+    }
+
+    if (action === 'admin_save_fleet_bike' || action === 'admin_save_and_assign_fleet_bike') {
+      const authHeader = req.headers.get('Authorization') ?? ''
+      const gate = await assertDashboardFleetAdmin(sb, authHeader)
+      if (!gate.ok) return fail(gate.error)
+
+      const bikeId = typeof body.bikeId === 'string' ? body.bikeId : ''
+      const riderId = typeof body.riderId === 'string' ? body.riderId : ''
+      const bikeNumber = typeof body.bikeNumber === 'string'
+        ? body.bikeNumber.trim().toUpperCase()
+        : ''
+      const model = typeof body.model === 'string' ? body.model.trim() : ''
+      const registrationNumber = typeof body.registrationNumber === 'string'
+        ? body.registrationNumber.trim().toUpperCase()
+        : ''
+      const capacity = Number(body.batteryCapacityKwh)
+      const voltage = Number(body.nominalVoltageV)
+      const watts = Number(body.motorPowerW)
+
+      if (!bikeNumber || bikeNumber.length > 100) return fail('Valid bike number required')
+      if (!model || model.length > 100) return fail('Valid bike model required')
+      if (!registrationNumber || registrationNumber.length > 50) {
+        return fail('Valid registration number required')
+      }
+      if (!Number.isFinite(capacity) || capacity <= 0 || capacity > 100) {
+        return fail('Battery capacity must be between 0 and 100 kWh')
+      }
+      if (!Number.isFinite(voltage) || voltage <= 0 || voltage > 1000) {
+        return fail('Nominal voltage must be between 0 and 1000 V')
+      }
+      if (!Number.isInteger(watts) || watts <= 0 || watts > 100000) {
+        return fail('Motor power must be between 1 and 100000 W')
+      }
+
+      const values = {
+        bike_number: bikeNumber,
+        model,
+        registration_number: registrationNumber,
+        battery_capacity_kwh: capacity,
+        nominal_voltage_v: voltage,
+        motor_power_w: watts,
+      }
+      const saved = bikeId
+        ? await sb.from('fleet_bikes').update(values).eq('id', bikeId).select('*').single()
+        : await sb.from('fleet_bikes').insert(values).select('*').single()
+      if (saved.error || !saved.data) return fail(formatDbErr(saved.error))
+
+      if (action === 'admin_save_and_assign_fleet_bike') {
+        if (!riderId) return fail('riderId required')
+        const { data: existingOwner, error: ownerError } = await sb
+          .from('rider_bike_assignments')
+          .select('id,rider_id')
+          .eq('bike_id', saved.data.id)
+          .is('returned_at', null)
+          .neq('rider_id', riderId)
+          .maybeSingle()
+        if (ownerError) return fail(formatDbErr(ownerError))
+        if (existingOwner) return fail('Bike is already assigned to another rider')
+
+        const now = new Date().toISOString()
+        const { error: returnError } = await sb
+          .from('rider_bike_assignments')
+          .update({ returned_at: now })
+          .eq('rider_id', riderId)
+          .is('returned_at', null)
+          .neq('bike_id', saved.data.id)
+        if (returnError) return fail(formatDbErr(returnError))
+
+        const { data: current } = await sb
+          .from('rider_bike_assignments')
+          .select('id')
+          .eq('rider_id', riderId)
+          .eq('bike_id', saved.data.id)
+          .is('returned_at', null)
+          .maybeSingle()
+        if (!current) {
+          const { error: assignmentError } = await sb
+            .from('rider_bike_assignments')
+            .insert({
+              rider_id: riderId,
+              bike_id: saved.data.id,
+              assigned_at: now,
+              notes: typeof body.notes === 'string' ? body.notes.trim().slice(0, 500) : null,
+            })
+          if (assignmentError) return fail(formatDbErr(assignmentError))
+        }
+      }
+
+      return ok({ data: { bike: saved.data, assigned: action === 'admin_save_and_assign_fleet_bike' } })
+    }
+
+    if (action === 'update_bike_battery') {
+      return fail('Bike specifications are managed by Dornye administrators')
     }
 
     if (action === 'dashboard_refresh') {

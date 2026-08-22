@@ -80,6 +80,10 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
       }
       _portalSessionToken = rider['sessionToken']?.toString();
       _portalRefreshToken = rider['refreshToken']?.toString();
+      PortalSessionCache.sessionToken = _portalSessionToken;
+      PortalSessionCache.riderId = rider['id'].toString();
+      PortalSessionCache.riderEmail =
+          rider['email']?.toString() ?? email.trim().toLowerCase();
       _portalAuth.add(true);
       Map? dashboard;
       try {
@@ -351,6 +355,7 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
   void _applyPortalRefreshPayload(Map payload) {
     _portalSessionToken =
         payload['sessionToken']?.toString() ?? _portalSessionToken;
+    PortalSessionCache.sessionToken = _portalSessionToken;
     _portalRefreshToken =
         payload['refreshToken']?.toString() ?? _portalRefreshToken;
     final assignment = payload['assignment'] ?? payload['bikeAssignment'];

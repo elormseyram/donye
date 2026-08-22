@@ -36,6 +36,27 @@ class ProfileController extends Notifier<AsyncValue<void>> {
       },
     );
   }
+
+  Future<bool> updateBatteryCapacity({
+    required String bikeId,
+    required double capacityKwh,
+  }) async {
+    if (capacityKwh <= 0 || capacityKwh > 100) return false;
+    state = const AsyncValue.loading();
+    final repository = ref.read(profileRepositoryProvider);
+    final result = await repository.updateBatteryCapacity(bikeId, capacityKwh);
+    return result.fold(
+      (failure) {
+        state = AsyncValue.error(failure.message, StackTrace.current);
+        return false;
+      },
+      (_) {
+        state = const AsyncValue.data(null);
+        ref.invalidate(currentBikeProvider);
+        return true;
+      },
+    );
+  }
 }
 
 final profileControllerProvider =
