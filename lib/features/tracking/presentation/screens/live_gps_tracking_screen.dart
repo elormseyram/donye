@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/app_config.dart';
+import '../../../../core/services/google_maps_loader.dart';
+import '../../../../core/widgets/sr_empty_state.dart';
+import '../../../../core/widgets/dornye_logo.dart';
 import '../../../../core/routes/route_names.dart';
 import '../providers/tracking_provider.dart';
 import '../widgets/speed_overlay_chip.dart';
@@ -25,6 +29,18 @@ class _LiveGpsTrackingScreenState
 
   @override
   Widget build(BuildContext context) {
+    if (AppConfig.googleMapsApiKey.isEmpty || !isGoogleMapsReady) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Live Tracking')),
+        body: const Center(
+          child: SrEmptyState(
+            iconWidget: DornyeLogo(size: 64),
+            title: 'Map unavailable',
+            subtitle: 'Add a Google Maps API key to the local app configuration.',
+          ),
+        ),
+      );
+    }
     final location = ref.watch(currentLocationProvider);
     final routeAsync = ref.watch(rideRouteProvider);
 

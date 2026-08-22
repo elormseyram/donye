@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'core/constants/app_config.dart';
 import 'core/dependency_injection/injection_container.dart';
+import 'core/services/google_maps_loader.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,8 @@ Future<void> main() async {
     url: AppConfig.supabaseUrl,
     anonKey: AppConfig.supabasePublishableKey,
   );
+
+  await ensureGoogleMapsLoaded(AppConfig.googleMapsApiKey);
 
   await Hive.initFlutter();
   await _openHiveBoxes();
