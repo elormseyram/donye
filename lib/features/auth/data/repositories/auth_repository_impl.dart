@@ -120,5 +120,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Stream<bool> get authStateStream => _remote.authStateStream;
+  Stream<bool> get authStateStream => _remote.authStateStream.map(
+        (remoteAuthenticated) =>
+            remoteAuthenticated || _local.getCachedRiderJson() != null,
+      );
 }

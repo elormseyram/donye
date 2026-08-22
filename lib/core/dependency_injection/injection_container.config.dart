@@ -242,6 +242,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i161.AuthRemoteDataSource(
         gh<_i454.SupabaseClient>(),
         gh<_i361.Dio>(),
+        gh<_i992.IAuthLocalDataSource>(),
       ),
     );
     gh.lazySingleton<_i465.IAnalyticsRemoteDataSource>(

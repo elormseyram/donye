@@ -6,6 +6,7 @@ import '../../../../core/errors/exceptions.dart' as app;
 import '../../../../core/constants/app_config.dart';
 import '../models/rider_model.dart';
 import 'portal_session_cache.dart';
+import 'auth_local_datasource.dart';
 
 abstract class IAuthRemoteDataSource {
   Future<RiderModel> login({required String email, required String password});
@@ -27,13 +28,16 @@ abstract class IAuthRemoteDataSource {
 
 @LazySingleton(as: IAuthRemoteDataSource)
 class AuthRemoteDataSource implements IAuthRemoteDataSource {
-  AuthRemoteDataSource(this._client, this._dio)
+  AuthRemoteDataSource(this._client, this._dio, this._local)
       : _portalClient = SupabaseClient(
           AppConfig.dornyePortalUrl,
           AppConfig.dornyePortalPublishableKey,
-        );
+        ) {
+    _restorePortalSession();
+  }
   final SupabaseClient _client;
   final Dio _dio;
+  final IAuthLocalDataSource _local;
   final SupabaseClient _portalClient;
   final BehaviorSubject<bool> _portalAuth = BehaviorSubject.seeded(false);
   String? _portalSessionToken;
@@ -146,6 +150,7 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
             DateTime.now(),
         isActive: true,
       );
+      await _persistPortalSession();
       return _portalRider!;
     } on app.AppAuthException {
       rethrow;
@@ -216,6 +221,7 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
       _portalRider = null;
       _portalAuth.add(false);
       PortalSessionCache.clear();
+      await _local.clearPortalSession();
     } catch (e) {
       throw app.AppAuthException(message: e.toString());
     }
@@ -276,6 +282,7 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
           _portalRider = _portalRider!.copyWith(
             assignedBikeId: assignedBikeId,
           );
+          await _persistPortalSession();
         }
       } catch (_) {
         final refreshToken = _portalRefreshToken;
@@ -380,6 +387,56 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
           payload['profileImageUrl']?.toString() ?? _portalRider!.avatarUrl,
       assignedBikeId: assignedBikeId,
     );
+  }
+
+  void _restorePortalSession() {
+    final saved = _local.getPortalSession();
+    if (saved == null) {
+      // Upgrade riders cached by older app versions. The deployed portal can
+      // verify the rider id/email pair and will refresh the bike assignment;
+      // the next interactive login stores the signed session token.
+      final cachedRider = _local.getCachedRiderJson();
+      if (cachedRider != null) {
+        try {
+          _portalRider = RiderModel.fromJson(cachedRider);
+          PortalSessionCache.riderId = _portalRider!.id;
+          PortalSessionCache.riderEmail = _portalRider!.email;
+          _portalAuth.add(true);
+        } catch (_) {
+          // Ignore an obsolete or malformed cache.
+        }
+      }
+      return;
+    }
+    final riderJson = saved['rider'];
+    final token = saved['sessionToken']?.toString();
+    if (riderJson is! Map || token == null || token.isEmpty) return;
+    try {
+      _portalRider = RiderModel.fromJson(Map<String, dynamic>.from(riderJson));
+      _portalSessionToken = token;
+      _portalRefreshToken = saved['refreshToken']?.toString();
+      final bike = saved['bike'];
+      PortalSessionCache.bike =
+          bike is Map ? Map<String, dynamic>.from(bike) : null;
+      PortalSessionCache.sessionToken = token;
+      PortalSessionCache.riderId = _portalRider!.id;
+      PortalSessionCache.riderEmail = _portalRider!.email;
+      _portalAuth.add(true);
+    } catch (_) {
+      _local.clearPortalSession();
+    }
+  }
+
+  Future<void> _persistPortalSession() async {
+    final rider = _portalRider;
+    final token = _portalSessionToken;
+    if (rider == null || token == null) return;
+    await _local.cachePortalSession({
+      'rider': rider.toJson(),
+      'sessionToken': token,
+      'refreshToken': _portalRefreshToken,
+      'bike': PortalSessionCache.bike,
+    });
   }
 
   Future<Map<String, dynamic>?> _fetchDirectPortalAssignment(
