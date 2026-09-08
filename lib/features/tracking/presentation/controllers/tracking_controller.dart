@@ -15,5 +15,5 @@ class TrackingController extends AutoDisposeNotifier<LocationEntity?> {
 
 final trackingControllerProvider =
     AutoDisposeNotifierProvider<TrackingController, LocationEntity?>(
-  TrackingController.new,
-);
+      TrackingController.new,
+    );

@@ -48,32 +48,47 @@ class AnalyticsRepositoryImpl implements IAnalyticsRepository {
         dailyMap[key]!.add(m);
       }
 
-      final dailyStats = dailyMap.values
-          .map((acc) => DailyDistanceStat(
-                date: acc.date,
-                distanceKm: acc.distanceKm,
-                energyKwh: acc.energyKwh,
-              ))
-          .toList()
-        ..sort((a, b) => a.date.compareTo(b.date));
+      final dailyStats =
+          dailyMap.values
+              .map(
+                (acc) => DailyDistanceStat(
+                  date: acc.date,
+                  distanceKm: acc.distanceKm,
+                  energyKwh: acc.energyKwh,
+                ),
+              )
+              .toList()
+            ..sort((a, b) => a.date.compareTo(b.date));
 
       final totalDist = recent.fold(0.0, (s, m) => s + m.distanceKm);
       final totalEnergy = recent.fold(0.0, (s, m) => s + m.energyConsumedKwh);
       final maxSpeed = recent.isEmpty
           ? 0.0
           : recent.map((m) => m.maxSpeedKmh).reduce((a, b) => a > b ? a : b);
-      final avgSpeed =
-          recent.isEmpty ? 0.0 : recent.fold(0.0, (s, m) => s + m.avgSpeedKmh) / recent.length;
+      final totalRideTime = recent.fold<Duration>(Duration.zero, (total, m) {
+        final start = DateTime.parse(m.startTime);
+        final end = m.endTime == null ? start : DateTime.parse(m.endTime!);
+        return total + end.difference(start);
+      });
+      final rideHours = totalRideTime.inMilliseconds / 3600000.0;
+      final avgSpeed = rideHours > 0
+          ? totalDist / rideHours
+          : (recent.isEmpty
+                ? 0.0
+                : recent.fold(0.0, (s, m) => s + m.avgSpeedKmh) /
+                      recent.length);
 
-      return Right(WeeklyStatsEntity(
-        totalDistanceKm: totalDist,
-        totalEnergyKwh: totalEnergy,
-        avgSpeedKmh: avgSpeed,
-        maxSpeedKmh: maxSpeed,
-        totalRides: recent.length,
-        totalRideTime: Duration.zero,
-        dailyDistance: dailyStats,
-      ));
+      return Right(
+        WeeklyStatsEntity(
+          totalDistanceKm: totalDist,
+          totalEnergyKwh: totalEnergy,
+          avgSpeedKmh: avgSpeed,
+          maxSpeedKmh: maxSpeed,
+          totalRides: recent.length,
+          totalRideTime: totalRideTime,
+          dailyDistance: dailyStats,
+        ),
+      );
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {

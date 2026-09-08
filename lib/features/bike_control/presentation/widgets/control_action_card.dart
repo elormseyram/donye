@@ -22,24 +22,37 @@ class ControlActionCard extends StatelessWidget {
         children: [
           Text(title, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.md),
-          GridView.count(
-            crossAxisCount: actions.length > 3 ? 4 : actions.length,
-            crossAxisSpacing: AppSpacing.sm,
-            mainAxisSpacing: AppSpacing.sm,
-            childAspectRatio: 0.85,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            children: actions
-                .map(
-                  (a) => CommandButton(
-                    label: a.label,
-                    icon: a.icon,
-                    onPressed: a.onPressed,
-                    isDestructive: a.isDestructive,
-                    requireConfirm: a.requireConfirm,
-                  ),
-                )
-                .toList(),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              const minimumButtonWidth = 120.0;
+              final possibleColumns =
+                  ((constraints.maxWidth + AppSpacing.sm) /
+                          (minimumButtonWidth + AppSpacing.sm))
+                      .floor();
+              final columns = possibleColumns.clamp(1, actions.length);
+              final buttonWidth =
+                  (constraints.maxWidth - AppSpacing.sm * (columns - 1)) /
+                  columns;
+
+              return Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: actions
+                    .map(
+                      (action) => SizedBox(
+                        width: buttonWidth,
+                        child: CommandButton(
+                          label: action.label,
+                          icon: action.icon,
+                          onPressed: action.onPressed,
+                          isDestructive: action.isDestructive,
+                          requireConfirm: action.requireConfirm,
+                        ),
+                      ),
+                    )
+                    .toList(),
+              );
+            },
           ),
         ],
       ),

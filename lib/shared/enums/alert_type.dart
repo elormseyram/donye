@@ -3,6 +3,7 @@ enum AlertType {
   overheat,
   geofence,
   tamper,
+  crash,
   fault;
 
   String get label {
@@ -15,6 +16,8 @@ enum AlertType {
         return 'Geofence';
       case AlertType.tamper:
         return 'Tamper Detected';
+      case AlertType.crash:
+        return 'Crash Detected';
       case AlertType.fault:
         return 'System Fault';
     }

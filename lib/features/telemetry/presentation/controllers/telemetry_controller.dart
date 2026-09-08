@@ -5,17 +5,14 @@ import '../providers/telemetry_provider.dart';
 class TelemetryController extends AutoDisposeNotifier<TelemetryEntity?> {
   @override
   TelemetryEntity? build() {
-    ref.listen<AsyncValue<TelemetryEntity>>(
-      telemetryStreamProvider,
-      (_, next) {
-        next.whenData((data) => state = data);
-      },
-    );
+    ref.listen<AsyncValue<TelemetryEntity>>(telemetryStreamProvider, (_, next) {
+      next.whenData((data) => state = data);
+    });
     return ref.read(latestTelemetryProvider);
   }
 }
 
 final telemetryControllerProvider =
     AutoDisposeNotifierProvider<TelemetryController, TelemetryEntity?>(
-  TelemetryController.new,
-);
+      TelemetryController.new,
+    );

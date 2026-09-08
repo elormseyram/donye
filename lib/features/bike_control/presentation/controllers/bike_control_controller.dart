@@ -33,7 +33,8 @@ class BikeControlController
   Future<void> enable() => sendCommand(CommandType.enable);
 }
 
-final bikeControlControllerProvider = AutoDisposeNotifierProvider<
-    BikeControlController, AsyncValue<CommandStatus?>>(
-  BikeControlController.new,
-);
+final bikeControlControllerProvider =
+    AutoDisposeNotifierProvider<
+      BikeControlController,
+      AsyncValue<CommandStatus?>
+    >(BikeControlController.new);

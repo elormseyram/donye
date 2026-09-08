@@ -7,6 +7,9 @@ required_variables=(
   SUPABASE_PUBLISHABLE_KEY
   DORNYE_PORTAL_URL
   DORNYE_PORTAL_PUBLISHABLE_KEY
+  MQTT_BROKER_HOST
+  MQTT_USERNAME
+  MQTT_PASSWORD
 )
 
 missing_variables=()
@@ -38,11 +41,17 @@ dart_defines=(
   "--dart-define=SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY"
   "--dart-define=DORNYE_PORTAL_URL=$DORNYE_PORTAL_URL"
   "--dart-define=DORNYE_PORTAL_PUBLISHABLE_KEY=$DORNYE_PORTAL_PUBLISHABLE_KEY"
+  "--dart-define=MQTT_BROKER_HOST=$MQTT_BROKER_HOST"
+  "--dart-define=MQTT_USERNAME=$MQTT_USERNAME"
+  "--dart-define=MQTT_PASSWORD=$MQTT_PASSWORD"
 )
 
 if [[ -n "${GOOGLE_MAPS_API_KEY:-}" ]]; then
   dart_defines+=("--dart-define=GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY")
 fi
 
-flutter build web --release "${dart_defines[@]}"
+if [[ -n "${MQTT_BIKE_ID:-}" ]]; then
+  dart_defines+=("--dart-define=MQTT_BIKE_ID=$MQTT_BIKE_ID")
+fi
 
+flutter build web --release "${dart_defines[@]}"

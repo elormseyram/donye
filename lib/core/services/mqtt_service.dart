@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:rxdart/rxdart.dart';
 import '../constants/app_config.dart';
 import '../../shared/enums/mqtt_connection_status.dart';
+import 'mqtt_client_factory.dart';
 
 typedef JsonMap = Map<String, dynamic>;
 
@@ -16,17 +16,21 @@ class MqttService {
 
   final _log = Logger();
 
-  MqttServerClient? _client;
+  MqttClient? _client;
   String? _bikeId;
   String? _lastToken;
   int _reconnectDelay = 1;
+  Timer? _reconnectTimer;
+  bool _disconnectRequested = false;
 
-  final _connectionStatus =
-      BehaviorSubject<MqttConnectionStatus>.seeded(MqttConnectionStatus.disconnected);
+  final _connectionStatus = BehaviorSubject<MqttConnectionStatus>.seeded(
+    MqttConnectionStatus.disconnected,
+  );
   final _telemetry = BehaviorSubject<JsonMap>();
   final _location = BehaviorSubject<JsonMap>();
   final _bikeStatus = BehaviorSubject<JsonMap>();
-  final _alerts = PublishSubject<JsonMap>();
+  // Keep recent safety events so opening Alerts after a crash still shows it.
+  final _alerts = ReplaySubject<JsonMap>(maxSize: 20);
 
   Stream<MqttConnectionStatus> get connectionStatus => _connectionStatus.stream;
   Stream<JsonMap> get telemetryStream => _telemetry.stream;
@@ -35,7 +39,17 @@ class MqttService {
   Stream<JsonMap> get alertStream => _alerts.stream;
 
   Future<void> connect(String bikeId, String jwtToken) async {
-    _bikeId = bikeId;
+    final mqttBikeId = AppConfig.mqttBikeId.isEmpty
+        ? bikeId
+        : AppConfig.mqttBikeId;
+    if (_bikeId == mqttBikeId &&
+        !_disconnectRequested &&
+        _connectionStatus.value != MqttConnectionStatus.disconnected) {
+      return;
+    }
+    _reconnectTimer?.cancel();
+    _disconnectRequested = false;
+    _bikeId = mqttBikeId;
     _lastToken = jwtToken;
     _reconnectDelay = 1;
     await _doConnect();
@@ -43,31 +57,44 @@ class MqttService {
 
   Future<void> _doConnect() async {
     if (_bikeId == null || _lastToken == null) return;
+    if (AppConfig.mqttBrokerHost.isEmpty ||
+        AppConfig.mqttUsername.isEmpty ||
+        AppConfig.mqttPassword.isEmpty) {
+      _log.e('MQTT configuration is missing');
+      _connectionStatus.add(MqttConnectionStatus.disconnected);
+      return;
+    }
     _connectionStatus.add(MqttConnectionStatus.connecting);
 
     final clientId = 'sherides_${DateTime.now().millisecondsSinceEpoch}';
-    final port = AppConfig.mqttUseTls
-        ? AppConfig.mqttBrokerTlsPort
-        : AppConfig.mqttBrokerPort;
-
-    _client = MqttServerClient(AppConfig.mqttBrokerHost, clientId)
-      ..port = port
-      ..secure = AppConfig.mqttUseTls
-      ..keepAlivePeriod = 30
-      ..autoReconnect = false
-      ..connectTimeoutPeriod = 10000
-      ..logging(on: false)
-      ..onConnected = _onConnected
-      ..onDisconnected = _onDisconnected
-      ..onSubscribed = (_) {}
-      ..onBadCertificate = ((Object _) => true)
-      ..connectionMessage = MqttConnectMessage()
-          .authenticateAs(AppConfig.mqttUsername, AppConfig.mqttPassword)
-          .withClientIdentifier(clientId)
-          .startClean();
+    _client?.onDisconnected = null;
+    _client?.disconnect();
+    _client =
+        createMqttClient(
+            host: AppConfig.mqttBrokerHost,
+            clientId: clientId,
+            tcpPort: AppConfig.mqttUseTls
+                ? AppConfig.mqttBrokerTlsPort
+                : AppConfig.mqttBrokerPort,
+            webSocketPort: AppConfig.mqttBrokerWebSocketTlsPort,
+          )
+          ..keepAlivePeriod = 30
+          ..autoReconnect = false
+          ..connectTimeoutPeriod = 10000
+          ..logging(on: false)
+          ..onConnected = _onConnected
+          ..onDisconnected = _onDisconnected
+          ..onSubscribed = (_) {}
+          ..connectionMessage = MqttConnectMessage()
+              .authenticateAs(AppConfig.mqttUsername, AppConfig.mqttPassword)
+              .withClientIdentifier(clientId)
+              .startClean();
 
     try {
-      await _client!.connect();
+      final result = await _client!.connect();
+      if (result?.state != MqttConnectionState.connected) {
+        _scheduleReconnect();
+      }
     } catch (e) {
       _log.e('MQTT connect error: $e');
       _scheduleReconnect();
@@ -84,7 +111,7 @@ class MqttService {
 
   void _onDisconnected() {
     _log.w('MQTT disconnected');
-    if (_connectionStatus.value != MqttConnectionStatus.disconnected) {
+    if (!_disconnectRequested) {
       _scheduleReconnect();
     }
   }
@@ -121,26 +148,40 @@ class MqttService {
     }
   }
 
-  Future<void> publishCommand(JsonMap payload) async {
-    if (_bikeId == null) return;
+  Future<bool> publishCommand(JsonMap payload) async {
+    if (_bikeId == null) return false;
     if (_client?.connectionStatus?.state != MqttConnectionState.connected) {
-      return;
+      return false;
     }
     final topic = '${AppConfig.mqttTopicPrefix}/$_bikeId/commands';
-    final builder = MqttClientPayloadBuilder()
-      ..addString(jsonEncode(payload));
-    _client!.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!);
+    final builder = MqttClientPayloadBuilder()..addString(jsonEncode(payload));
+    final bytes = builder.payload;
+    if (bytes == null) return false;
+    _client!.publishMessage(topic, MqttQos.atLeastOnce, bytes);
+    return true;
   }
 
   void _scheduleReconnect() {
+    if (_disconnectRequested ||
+        _bikeId == null ||
+        _reconnectTimer?.isActive == true) {
+      return;
+    }
     _connectionStatus.add(MqttConnectionStatus.reconnecting);
-    Future.delayed(Duration(seconds: _reconnectDelay), () async {
-      _reconnectDelay = (_reconnectDelay * 2).clamp(1, 30);
-      await _doConnect();
+    _reconnectTimer = Timer(Duration(seconds: _reconnectDelay), () {
+      _reconnectTimer = null;
+      _reconnectDelay = (_reconnectDelay * 2).clamp(
+        1,
+        AppConfig.mqttReconnectMaxDelaySeconds,
+      );
+      _doConnect();
     });
   }
 
   Future<void> disconnect() async {
+    _disconnectRequested = true;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
     _connectionStatus.add(MqttConnectionStatus.disconnected);
     _bikeId = null;
     _lastToken = null;
@@ -149,6 +190,7 @@ class MqttService {
   }
 
   void dispose() {
+    _reconnectTimer?.cancel();
     _connectionStatus.close();
     _telemetry.close();
     _location.close();

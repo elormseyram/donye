@@ -14,6 +14,5 @@ class SendCommandUseCase {
     String bikeId,
     CommandType type, {
     String? payload,
-  }) =>
-      _repository.sendCommand(bikeId, type, payload: payload);
+  }) => _repository.sendCommand(bikeId, type, payload: payload);
 }

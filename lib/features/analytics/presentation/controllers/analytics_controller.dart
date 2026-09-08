@@ -11,5 +11,6 @@ class AnalyticsController extends Notifier<void> {
   }
 }
 
-final analyticsControllerProvider =
-    NotifierProvider<AnalyticsController, void>(AnalyticsController.new);
+final analyticsControllerProvider = NotifierProvider<AnalyticsController, void>(
+  AnalyticsController.new,
+);

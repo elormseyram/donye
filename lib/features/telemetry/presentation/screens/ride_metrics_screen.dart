@@ -54,8 +54,8 @@ class RideMetricsScreen extends ConsumerWidget {
                 SrMetricTile(
                   icon: Icons.thermostat_outlined,
                   label: 'Motor Temperature',
-                  value: telemetry?.temperatureCelsius.toStringAsFixed(0) ??
-                      '--',
+                  value:
+                      telemetry?.temperatureCelsius.toStringAsFixed(0) ?? '--',
                   unit: '°C',
                   iconColor: _tempColor(telemetry?.temperatureCelsius),
                 ),

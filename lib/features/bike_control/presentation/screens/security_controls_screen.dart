@@ -16,6 +16,7 @@ class SecurityControlsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(bikeControlControllerProvider.notifier);
     final bikeId = ref.watch(assignedBikeIdProvider);
+    final security = ref.watch(bikeSecurityStateProvider).valueOrNull;
 
     ref.listen(bikeControlControllerProvider, (_, next) {
       next.whenOrNull(
@@ -35,7 +36,11 @@ class SecurityControlsScreen extends ConsumerWidget {
         children: [
           Center(
             child: BikeStatusIndicator(
-              securityState: BikeSecurityState.unknown,
+              securityState: security == 'locked'
+                  ? BikeSecurityState.locked
+                  : security == 'unlocked'
+                  ? BikeSecurityState.unlocked
+                  : BikeSecurityState.unknown,
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -52,8 +57,8 @@ class SecurityControlsScreen extends ConsumerWidget {
                 Text(
                   'Commands are sent instantly over MQTT and logged for audit.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.onSurfaceSecondary,
-                      ),
+                    color: AppColors.onSurfaceSecondary,
+                  ),
                 ),
               ],
             ),

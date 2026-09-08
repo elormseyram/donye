@@ -37,16 +37,24 @@ class BikeControlDataSource implements IBikeControlDataSource {
 
     try {
       // Publish over MQTT (primary channel)
-      await _mqttService.publishCommand(model.toMqttPayload());
+      final published = await _mqttService.publishCommand(
+        model.toMqttPayload(),
+      );
+      if (!published) {
+        throw ServerException(message: 'Bike is not connected to MQTT');
+      }
 
-      // Log to Supabase for audit trail
-      await _client.from('bike_commands').insert({
-        'bike_id': bikeId,
-        'type': type.name,
-        if (payload != null) 'payload': payload,
-        'issued_at': issuedAt,
-        'status': CommandStatus.sent.name,
-      });
+      // The command has already reached MQTT. An unavailable optional audit
+      // table must not make a successful hardware command look like a failure.
+      try {
+        await _client.from('bike_commands').insert({
+          'bike_id': bikeId,
+          'type': type.name,
+          if (payload != null) 'payload': payload,
+          'issued_at': issuedAt,
+          'status': CommandStatus.sent.name,
+        });
+      } catch (_) {}
 
       return model;
     } catch (e) {

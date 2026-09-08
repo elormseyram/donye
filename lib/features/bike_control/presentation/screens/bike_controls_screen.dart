@@ -18,11 +18,10 @@ class BikeControlsScreen extends ConsumerWidget {
     final controller = ref.watch(bikeControlControllerProvider.notifier);
     final state = ref.watch(bikeControlControllerProvider);
     final bikeId = ref.watch(assignedBikeIdProvider);
+    final security = ref.watch(bikeSecurityStateProvider).valueOrNull;
 
     ref.listen(bikeControlControllerProvider, (_, next) {
-      next.whenOrNull(
-        error: (e, _) => SrSnackbar.error(context, e.toString()),
-      );
+      next.whenOrNull(error: (e, _) => SrSnackbar.error(context, e.toString()));
     });
 
     final isLoading = state.isLoading;
@@ -50,7 +49,11 @@ class BikeControlsScreen extends ConsumerWidget {
               children: [
                 Center(
                   child: BikeStatusIndicator(
-                    securityState: BikeSecurityState.unknown,
+                    securityState: security == 'locked'
+                        ? BikeSecurityState.locked
+                        : security == 'unlocked'
+                        ? BikeSecurityState.unlocked
+                        : BikeSecurityState.unknown,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),

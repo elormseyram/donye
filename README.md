@@ -42,6 +42,16 @@ For production, use an HTTPS backend URL and your deployment secret manager.
 The Supabase publishable key is intentionally a client key; access is enforced
 by the RLS policies. Never put a service-role or secret key in Flutter.
 
+The live telemetry connection also requires `MQTT_BROKER_HOST`,
+`MQTT_USERNAME`, and `MQTT_PASSWORD`. Add all three to `config/local.json` for
+local runs and to the Netlify project's environment variables for web deploys.
+The web app connects to HiveMQ over secure WebSockets on port 8884; native apps
+use MQTT over TLS on port 8883.
+
+For hardware whose MQTT identifier differs from its database bike ID, set the
+optional `MQTT_BIKE_ID` value (for example, `dev-001`). This changes only MQTT
+topic routing and leaves database assignments and history intact.
+
 For a deployed backend, pass a reachable URL in the configuration file or with:
 
 ```powershell

@@ -21,9 +21,11 @@ class TelemetryLocalDataSource implements ITelemetryLocalDataSource {
     try {
       final raw = _box.values
           .whereType<String>()
-          .map((s) => TelemetryPayloadModel.fromJson(
-                jsonDecode(s) as Map<String, dynamic>,
-              ))
+          .map(
+            (s) => TelemetryPayloadModel.fromJson(
+              jsonDecode(s) as Map<String, dynamic>,
+            ),
+          )
           .where((m) => m.bikeId == bikeId)
           .toList();
       raw.sort((a, b) => b.timestamp.compareTo(a.timestamp));

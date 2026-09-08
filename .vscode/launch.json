@@ -4,7 +4,11 @@
     {
       "name": "Flutter (local)",
       "request": "launch",
-      "type": "dart"
+      "type": "dart",
+      "toolArgs": [
+        "--dart-define-from-file=config/local.json",
+        "--web-port=50854"
+      ]
     }
   ]
 }

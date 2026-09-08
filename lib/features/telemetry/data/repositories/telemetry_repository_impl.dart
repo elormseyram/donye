@@ -11,11 +11,7 @@ import '../models/telemetry_payload_model.dart';
 
 @LazySingleton(as: ITelemetryRepository)
 class TelemetryRepositoryImpl implements ITelemetryRepository {
-  const TelemetryRepositoryImpl(
-    this._mqttService,
-    this._remote,
-    this._local,
-  );
+  const TelemetryRepositoryImpl(this._mqttService, this._remote, this._local);
 
   final MqttService _mqttService;
   final ITelemetryRemoteDataSource _remote;

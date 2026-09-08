@@ -30,7 +30,8 @@ class _RideRouteScreenState extends ConsumerState<RideRouteScreen> {
           child: SrEmptyState(
             iconWidget: DornyeLogo(size: 64),
             title: 'Map unavailable',
-            subtitle: 'Add a Google Maps API key to the local app configuration.',
+            subtitle:
+                'Add a Google Maps API key to the local app configuration.',
           ),
         ),
       );
@@ -55,8 +56,9 @@ class _RideRouteScreenState extends ConsumerState<RideRouteScreen> {
             );
           }
 
-          final points =
-              route.map((l) => LatLng(l.latitude, l.longitude)).toList();
+          final points = route
+              .map((l) => LatLng(l.latitude, l.longitude))
+              .toList();
 
           final bounds = _computeBounds(points);
 
@@ -89,14 +91,16 @@ class _RideRouteScreenState extends ConsumerState<RideRouteScreen> {
                     markerId: const MarkerId('start'),
                     position: points.first,
                     icon: BitmapDescriptor.defaultMarkerWithHue(
-                        BitmapDescriptor.hueGreen),
+                      BitmapDescriptor.hueGreen,
+                    ),
                     infoWindow: const InfoWindow(title: 'Start'),
                   ),
                   Marker(
                     markerId: const MarkerId('end'),
                     position: points.last,
                     icon: BitmapDescriptor.defaultMarkerWithHue(
-                        BitmapDescriptor.hueOrange),
+                      BitmapDescriptor.hueOrange,
+                    ),
                     infoWindow: const InfoWindow(title: 'Last known'),
                   ),
                 },
@@ -170,9 +174,9 @@ class _RouteSummaryBar extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Text(
             '$pointCount GPS points recorded',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),

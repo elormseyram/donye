@@ -50,6 +50,7 @@ extension AlertModelX on AlertModel {
         'overheat' => AlertType.overheat,
         'geofence' => AlertType.geofence,
         'tamper' => AlertType.tamper,
+        'crash' => AlertType.crash,
         _ => AlertType.fault,
       };
 }

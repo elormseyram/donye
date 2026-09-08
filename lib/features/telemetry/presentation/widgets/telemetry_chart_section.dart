@@ -38,10 +38,10 @@ class _TelemetryChartSectionState extends ConsumerState<TelemetryChartSection> {
           SizedBox(
             height: 180,
             child: historyAsync.when(
-              loading: () => const SkeletonPulse(child: SkeletonBox(height: 200, radius: 12)),
-              error: (_, __) => const Center(
-                child: Text('No data available'),
+              loading: () => const SkeletonPulse(
+                child: SkeletonBox(height: 200, radius: 12),
               ),
+              error: (_, __) => const Center(child: Text('No data available')),
               data: (history) => history.isEmpty
                   ? const Center(child: Text('No history yet'))
                   : _BatteryChart(history: _filtered(history)),
@@ -82,10 +82,8 @@ class _BatteryChart extends StatelessWidget {
           show: true,
           drawVerticalLine: false,
           horizontalInterval: 25,
-          getDrawingHorizontalLine: (_) => FlLine(
-            color: AppColors.outline,
-            strokeWidth: 1,
-          ),
+          getDrawingHorizontalLine: (_) =>
+              FlLine(color: AppColors.outline, strokeWidth: 1),
         ),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(

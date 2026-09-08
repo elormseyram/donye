@@ -48,12 +48,14 @@ class BatteryAnalyticsScreen extends ConsumerWidget {
               ),
               data: (stats) {
                 if (stats == null) return const SizedBox();
-                final avgDrain = sessionsAsync.value == null ||
-                        sessionsAsync.value!.isEmpty
+                final loadedSessions = sessionsAsync.valueOrNull ?? const [];
+                final avgDrain = loadedSessions.isEmpty
                     ? 0.0
-                    : sessionsAsync.value!
-                            .fold(0.0, (s, r) => s + r.avgBatteryDrain) /
-                        sessionsAsync.value!.length;
+                    : loadedSessions.fold(
+                            0.0,
+                            (sum, ride) => sum + ride.avgBatteryDrain,
+                          ) /
+                          loadedSessions.length;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,47 +65,71 @@ class BatteryAnalyticsScreen extends ConsumerWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisSpacing: AppSpacing.sm,
-                      mainAxisSpacing: AppSpacing.sm,
-                      childAspectRatio: 1.5,
-                      children: [
-                        RideStatCard(
-                          label: 'Total Energy Used',
-                          value: stats.totalEnergyKwh.toStringAsFixed(2),
-                          unit: 'kWh',
-                          icon: Icons.bolt_outlined,
-                          color: AppColors.success,
-                        ),
-                        RideStatCard(
-                          label: 'Avg Battery Drain',
-                          value: avgDrain.toStringAsFixed(1),
-                          unit: '%/ride',
-                          icon: Icons.battery_4_bar_outlined,
-                          color: AppColors.warning,
-                        ),
-                        RideStatCard(
-                          label: 'Total Distance',
-                          value: stats.totalDistanceKm.toStringAsFixed(1),
-                          unit: 'km',
-                          icon: Icons.route_outlined,
-                          color: AppColors.primary,
-                        ),
-                        RideStatCard(
-                          label: 'Efficiency',
-                          value: stats.totalDistanceKm > 0
-                              ? (stats.totalDistanceKm /
-                                      stats.totalEnergyKwh.clamp(0.001, double.infinity))
-                                  .toStringAsFixed(1)
-                              : '—',
-                          unit: 'km/kWh',
-                          icon: Icons.eco_outlined,
-                          color: AppColors.success,
-                        ),
-                      ],
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final columns = constraints.maxWidth >= 900 ? 4 : 2;
+                        final cardWidth =
+                            (constraints.maxWidth -
+                                AppSpacing.sm * (columns - 1)) /
+                            columns;
+                        return Wrap(
+                          spacing: AppSpacing.sm,
+                          runSpacing: AppSpacing.sm,
+                          children: [
+                            SizedBox(
+                              width: cardWidth,
+                              height: 120,
+                              child: RideStatCard(
+                                label: 'Estimated Energy Used',
+                                value: stats.totalEnergyKwh.toStringAsFixed(2),
+                                unit: 'kWh',
+                                icon: Icons.bolt_outlined,
+                                color: AppColors.success,
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              height: 120,
+                              child: RideStatCard(
+                                label: 'Avg Battery Drain',
+                                value: avgDrain.toStringAsFixed(1),
+                                unit: '%/ride',
+                                icon: Icons.battery_4_bar_outlined,
+                                color: AppColors.warning,
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              height: 120,
+                              child: RideStatCard(
+                                label: 'Total Distance',
+                                value: stats.totalDistanceKm.toStringAsFixed(1),
+                                unit: 'km',
+                                icon: Icons.route_outlined,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              height: 120,
+                              child: RideStatCard(
+                                label: 'Efficiency',
+                                value: stats.totalDistanceKm > 0
+                                    ? (stats.totalDistanceKm /
+                                              stats.totalEnergyKwh.clamp(
+                                                0.001,
+                                                double.infinity,
+                                              ))
+                                          .toStringAsFixed(1)
+                                    : '—',
+                                unit: 'km/kWh',
+                                icon: Icons.eco_outlined,
+                                color: AppColors.success,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: AppSpacing.md),
                     SrCard(
@@ -111,7 +137,7 @@ class BatteryAnalyticsScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Daily Energy Consumption (kWh)',
+                            'Estimated Daily Energy (kWh)',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: AppSpacing.md),
@@ -139,11 +165,19 @@ class BatteryAnalyticsScreen extends ConsumerWidget {
                 final drainSpots = sessions
                     .asMap()
                     .entries
-                    .map((e) => FlSpot(
-                          e.key.toDouble(),
-                          e.value.avgBatteryDrain,
-                        ))
+                    .map(
+                      (e) => FlSpot(e.key.toDouble(), e.value.avgBatteryDrain),
+                    )
                     .toList();
+
+                if (drainSpots.every((spot) => spot.y == 0)) {
+                  return const SrEmptyState(
+                    icon: Icons.battery_charging_full_outlined,
+                    title: 'No battery usage recorded',
+                    subtitle:
+                        'Battery usage will appear after a ride with distance data.',
+                  );
+                }
 
                 return SrCard(
                   child: Column(
@@ -167,7 +201,9 @@ class BatteryAnalyticsScreen extends ConsumerWidget {
                                 dotData: const FlDotData(show: false),
                                 belowBarData: BarAreaData(
                                   show: true,
-                                  color: AppColors.warning.withValues(alpha: 0.08),
+                                  color: AppColors.warning.withValues(
+                                    alpha: 0.08,
+                                  ),
                                 ),
                               ),
                             ],

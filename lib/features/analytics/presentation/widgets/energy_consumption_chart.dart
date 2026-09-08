@@ -35,7 +35,7 @@ class EnergyConsumptionChart extends StatelessWidget {
         child: LineChart(
           LineChartData(
             minY: 0,
-            maxY: maxY * 1.3,
+            maxY: maxY > 0 ? maxY * 1.3 : 1,
             lineBarsData: [
               LineChartBarData(
                 spots: spots,

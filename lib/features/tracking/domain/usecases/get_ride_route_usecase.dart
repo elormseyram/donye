@@ -12,6 +12,5 @@ class GetRideRouteUseCase {
   Future<Either<Failure, List<LocationEntity>>> call(
     String bikeId, {
     DateTime? since,
-  }) =>
-      _repository.getRideRoute(bikeId, since: since);
+  }) => _repository.getRideRoute(bikeId, since: since);
 }

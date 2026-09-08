@@ -20,8 +20,11 @@ class BikeControlRepositoryImpl implements IBikeControlRepository {
     String? payload,
   }) async {
     try {
-      final model =
-          await _dataSource.sendCommand(bikeId, type, payload: payload);
+      final model = await _dataSource.sendCommand(
+        bikeId,
+        type,
+        payload: payload,
+      );
       return Right(model.toEntity());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

@@ -38,8 +38,7 @@ class TelemetryScreen extends ConsumerWidget {
             final status = snap.data;
             return Column(
               children: [
-                if (status != null)
-                  ConnectionStatusBanner(status: status),
+                if (status != null) ConnectionStatusBanner(status: status),
                 Expanded(
                   child: ListView(
                     children: [

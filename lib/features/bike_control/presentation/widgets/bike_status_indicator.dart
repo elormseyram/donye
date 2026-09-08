@@ -5,10 +5,7 @@ import '../../../../../core/constants/app_spacing.dart';
 enum BikeSecurityState { locked, unlocked, unknown }
 
 class BikeStatusIndicator extends StatelessWidget {
-  const BikeStatusIndicator({
-    super.key,
-    required this.securityState,
-  });
+  const BikeStatusIndicator({super.key, required this.securityState});
 
   final BikeSecurityState securityState;
 
@@ -17,15 +14,15 @@ class BikeStatusIndicator extends StatelessWidget {
     final (icon, color, label) = switch (securityState) {
       BikeSecurityState.locked => (Icons.lock, AppColors.error, 'Locked'),
       BikeSecurityState.unlocked => (
-          Icons.lock_open,
-          AppColors.success,
-          'Unlocked'
-        ),
+        Icons.lock_open,
+        AppColors.success,
+        'Unlocked',
+      ),
       BikeSecurityState.unknown => (
-          Icons.lock_outline,
-          AppColors.onSurfaceSecondary,
-          'Unknown'
-        ),
+        Icons.lock_outline,
+        AppColors.onSurfaceSecondary,
+        'Unknown',
+      ),
     };
 
     return Container(
