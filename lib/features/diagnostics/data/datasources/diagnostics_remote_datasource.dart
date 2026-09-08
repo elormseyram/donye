@@ -1,9 +1,8 @@
-import 'dart:math' as math;
-
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_config.dart';
 import '../../../../core/errors/exceptions.dart';
+import '../../../../core/services/crash_analysis_service.dart';
 import '../models/diagnostic_model.dart';
 import '../models/maintenance_log_model.dart';
 
@@ -14,8 +13,13 @@ abstract interface class IDiagnosticsRemoteDataSource {
 
 @LazySingleton(as: IDiagnosticsRemoteDataSource)
 class DiagnosticsRemoteDataSource implements IDiagnosticsRemoteDataSource {
-  const DiagnosticsRemoteDataSource(this._client);
+  DiagnosticsRemoteDataSource(this._client)
+    : _telemetryClient = SupabaseClient(
+        AppConfig.supabaseUrl,
+        AppConfig.supabasePublishableKey,
+      );
   final SupabaseClient _client;
+  final SupabaseClient _telemetryClient;
 
   @override
   Future<DiagnosticModel> getDiagnostics(String bikeId) async {
@@ -30,7 +34,8 @@ class DiagnosticsRemoteDataSource implements IDiagnosticsRemoteDataSource {
         throw ServerException(message: 'No diagnostics found');
       }
       return DiagnosticModel.fromJson(
-          Map<String, dynamic>.from(rows.first as Map));
+        Map<String, dynamic>.from(rows.first as Map),
+      );
     } catch (e) {
       try {
         return await _getCrashDiagnostics(bikeId);
@@ -46,32 +51,30 @@ class DiagnosticsRemoteDataSource implements IDiagnosticsRemoteDataSource {
     if (deviceId.isEmpty) {
       throw ServerException(message: 'MQTT bike ID is not configured');
     }
-    final rows = await _client
+    final rows = await _telemetryClient
         .from('ebike_telemetry')
-        .select('id,recorded_at,accel_x,accel_y,accel_z')
+        .select('id,recorded_at,accel_x,accel_y,accel_z,gyro_x,gyro_y,gyro_z')
         .eq('device_id', deviceId)
+        .or(
+          'accel_x.gte.1.4,accel_x.lte.-1.4,'
+          'accel_y.gte.1.4,accel_y.lte.-1.4,'
+          'accel_z.gte.1.4,accel_z.lte.-1.4,'
+          'gyro_x.gte.69,gyro_x.lte.-69,'
+          'gyro_y.gte.69,gyro_y.lte.-69,'
+          'gyro_z.gte.69,gyro_z.lte.-69',
+        )
         .order('recorded_at', ascending: false)
-        .limit(500);
+        .limit(5000);
     if ((rows as List).isEmpty) {
       throw ServerException(message: 'No crash telemetry found');
     }
 
-    Map<String, dynamic>? strongest;
-    var strongestImpact = 0.0;
-    for (final raw in rows) {
-      final row = Map<String, dynamic>.from(raw as Map);
-      final x = _number(row['accel_x']);
-      final y = _number(row['accel_y']);
-      final z = _number(row['accel_z']);
-      final impact = math.sqrt(x * x + y * y + z * z);
-      if (impact > strongestImpact) {
-        strongestImpact = impact;
-        strongest = row;
-      }
-    }
-
-    final hasCrash = strongestImpact >= 3.0;
-    final critical = strongestImpact >= 5.0;
+    final events = CrashAnalysisService.analyze(
+      rows.map((raw) => Map<String, dynamic>.from(raw as Map)).toList(),
+    );
+    final latestCrash = events.isEmpty ? null : events.first;
+    final hasCrash = latestCrash != null;
+    final critical = latestCrash?.isCritical ?? false;
     final latest = Map<String, dynamic>.from(rows.first as Map);
     return DiagnosticModel(
       id: 'telemetry-${latest['id']}',
@@ -82,10 +85,9 @@ class DiagnosticsRemoteDataSource implements IDiagnosticsRemoteDataSource {
               FaultCodeModel(
                 code: 'CRASH_IMPACT',
                 description:
-                    '${strongestImpact.toStringAsFixed(1)} g impact detected',
+                    '${latestCrash.phaseSummary}; ${latestCrash.peakImpactG.toStringAsFixed(1)} g and ${latestCrash.peakRotationDps.toStringAsFixed(0)}°/s',
                 severity: critical ? 'critical' : 'major',
-                detectedAt: strongest?['recorded_at']?.toString() ??
-                    latest['recorded_at'].toString(),
+                detectedAt: latestCrash.detectedAt.toIso8601String(),
                 isActive: true,
               ),
             ]
@@ -94,8 +96,6 @@ class DiagnosticsRemoteDataSource implements IDiagnosticsRemoteDataSource {
       maintenanceStatus: critical ? 'overdue' : (hasCrash ? 'dueSoon' : 'ok'),
     );
   }
-
-  double _number(Object? value) => double.tryParse('$value') ?? 0.0;
 
   @override
   Future<List<MaintenanceLogModel>> getMaintenanceLogs(String bikeId) async {
@@ -107,8 +107,7 @@ class DiagnosticsRemoteDataSource implements IDiagnosticsRemoteDataSource {
           .order('performed_at', ascending: false)
           .limit(50);
       return (rows as List)
-          .map((r) =>
-              MaintenanceLogModel.fromJson(r as Map<String, dynamic>))
+          .map((r) => MaintenanceLogModel.fromJson(r as Map<String, dynamic>))
           .toList();
     } catch (e) {
       throw ServerException(message: e.toString());

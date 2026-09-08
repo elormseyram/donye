@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rxdart/rxdart.dart';
+import '../../../../core/constants/app_config.dart';
 import '../../../../core/dependency_injection/injection_container.dart';
 import '../../../../shared/enums/alert_severity.dart';
 import '../../../../shared/enums/alert_type.dart';
@@ -23,8 +24,8 @@ final markAlertReadUseCaseProvider = Provider<MarkAlertReadUseCase>(
 );
 
 final activeAlertsProvider = StreamProvider<List<AlertEntity>>((ref) {
-  final bikeId = ref.watch(assignedBikeIdProvider);
-  if (bikeId == null) return const Stream.empty();
+  final bikeId = ref.watch(assignedBikeIdProvider) ?? AppConfig.mqttBikeId;
+  if (bikeId.isEmpty) return const Stream.empty();
   final useCase = ref.watch(streamActiveAlertsUseCaseProvider);
   final stored = useCase(bikeId);
   final liveCrashes = ref

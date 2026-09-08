@@ -20,6 +20,10 @@ dependencies:
 
   # Networking
   dio: ^5.7.0
+  http: ^1.6.0
+
+  # Ambient weather location
+  geolocator: ^14.0.2
 
   # IoT / MQTT
   mqtt_client: ^10.4.0
