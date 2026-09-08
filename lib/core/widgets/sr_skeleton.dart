@@ -37,10 +37,8 @@ class SkeletonPulseState extends State<SkeletonPulse>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _ctrl,
-      builder: (_, child) => Opacity(
-        opacity: 0.35 + 0.65 * _ctrl.value,
-        child: child,
-      ),
+      builder: (_, child) =>
+          Opacity(opacity: 0.35 + 0.65 * _ctrl.value, child: child),
       child: widget.child,
     );
   }
@@ -51,12 +49,7 @@ class SkeletonPulseState extends State<SkeletonPulse>
 // ---------------------------------------------------------------------------
 
 class SkeletonBox extends StatelessWidget {
-  const SkeletonBox({
-    super.key,
-    this.width,
-    this.height = 16,
-    this.radius = 8,
-  });
+  const SkeletonBox({super.key, this.width, this.height = 16, this.radius = 8});
 
   final double? width;
   final double height;
@@ -161,36 +154,40 @@ class AnalyticsSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SkeletonPulse(
-      child: ListView(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        physics: const NeverScrollableScrollPhysics(),
-        children: [
-          const SkeletonBox(width: 80, height: 18),
-          const SizedBox(height: AppSpacing.sm),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: AppSpacing.sm,
-            mainAxisSpacing: AppSpacing.sm,
-            childAspectRatio: 1.5,
-            children: const [
-              _StatCardSkeleton(),
-              _StatCardSkeleton(),
-              _StatCardSkeleton(),
-              _StatCardSkeleton(),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _ChartCardSkeleton(height: 180),
-          const SizedBox(height: AppSpacing.md),
-          const SkeletonBox(width: 100, height: 18),
-          const SizedBox(height: AppSpacing.sm),
-          ...[1, 2, 3].map((_) => const Padding(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SkeletonBox(width: 80, height: 18),
+            const SizedBox(height: AppSpacing.sm),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: AppSpacing.sm,
+              mainAxisSpacing: AppSpacing.sm,
+              childAspectRatio: 1.5,
+              children: const [
+                _StatCardSkeleton(),
+                _StatCardSkeleton(),
+                _StatCardSkeleton(),
+                _StatCardSkeleton(),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _ChartCardSkeleton(height: 180),
+            const SizedBox(height: AppSpacing.md),
+            const SkeletonBox(width: 100, height: 18),
+            const SizedBox(height: AppSpacing.sm),
+            ...[1, 2, 3].map(
+              (_) => const Padding(
                 padding: EdgeInsets.only(bottom: AppSpacing.sm),
                 child: _RideTileSkeleton(),
-              )),
-        ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -309,10 +306,12 @@ class DiagnosticsSkeleton extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           _ChartCardSkeleton(height: 60),
           const SizedBox(height: AppSpacing.md),
-          ...[1, 2, 3].map((_) => const Padding(
-                padding: EdgeInsets.only(bottom: AppSpacing.sm),
-                child: _FaultChipSkeleton(),
-              )),
+          ...[1, 2, 3].map(
+            (_) => const Padding(
+              padding: EdgeInsets.only(bottom: AppSpacing.sm),
+              child: _FaultChipSkeleton(),
+            ),
+          ),
         ],
       ),
     );
@@ -388,10 +387,12 @@ class ProfileSkeleton extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          ...[1, 2, 3].map((_) => const Padding(
-                padding: EdgeInsets.only(bottom: AppSpacing.md),
-                child: _FieldSkeleton(),
-              )),
+          ...[1, 2, 3].map(
+            (_) => const Padding(
+              padding: EdgeInsets.only(bottom: AppSpacing.md),
+              child: _FieldSkeleton(),
+            ),
+          ),
         ],
       ),
     );

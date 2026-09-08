@@ -142,7 +142,10 @@ class RideAnalyticsScreen extends ConsumerWidget {
               },
             ),
             sessionsAsync.when(
-              loading: () => const GenericListSkeleton(count: 4),
+              loading: () => const SizedBox(
+                height: 360,
+                child: GenericListSkeleton(count: 4),
+              ),
               error: (e, _) => SrErrorWidget(
                 message: 'Could not load ride sessions',
                 onRetry: () => ref.invalidate(rideSessionsProvider),

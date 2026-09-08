@@ -13,8 +13,15 @@ abstract class IAnalyticsRemoteDataSource {
 
 @LazySingleton(as: IAnalyticsRemoteDataSource)
 class AnalyticsRemoteDataSource implements IAnalyticsRemoteDataSource {
-  const AnalyticsRemoteDataSource(this._client);
+  AnalyticsRemoteDataSource(this._client)
+    : _telemetryClient = SupabaseClient(
+        AppConfig.supabaseUrl,
+        AppConfig.supabasePublishableKey,
+      );
   final SupabaseClient _client;
+  // Firmware telemetry is shared historical data. Keep this client independent
+  // from any rider auth token whose RLS policy may hide those rows.
+  final SupabaseClient _telemetryClient;
 
   @override
   Future<List<RideSessionModel>> getRideSessions(String riderId) async {
@@ -54,7 +61,7 @@ class AnalyticsRemoteDataSource implements IAnalyticsRemoteDataSource {
     // The most recent page always contains the current/last ride. Pulling the
     // entire high-frequency seven-day feed made this screen slow and could
     // time out before returning any result.
-    final rows = await _client
+    final rows = await _telemetryClient
         .from('ebike_telemetry')
         .select('device_id,latitude,longitude,gps_speed,recorded_at')
         .eq('device_id', deviceId)
