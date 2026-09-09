@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
+import 'package:mqtt_client/mqtt_browser_client.dart';
 import 'package:rxdart/rxdart.dart';
 import '../constants/app_config.dart';
 import '../../shared/enums/mqtt_connection_status.dart';
@@ -16,7 +18,7 @@ class MqttService {
 
   final _log = Logger();
 
-  MqttServerClient? _client;
+  MqttClient? _client;
   String? _bikeId;
   String? _lastToken;
   int _reconnectDelay = 1;
@@ -42,10 +44,29 @@ class MqttService {
   }
 
   Future<void> _doConnect() async {
-    if (_bikeId == null || _lastToken == null) return;
-    _connectionStatus.add(MqttConnectionStatus.connecting);
+  if (_bikeId == null || _lastToken == null) return;
+  _connectionStatus.add(MqttConnectionStatus.connecting);
 
-    final clientId = 'sherides_${DateTime.now().millisecondsSinceEpoch}';
+  final clientId = 'sherides_${DateTime.now().millisecondsSinceEpoch}';
+
+  if (kIsWeb) {
+    final scheme = AppConfig.mqttUseTls ? 'wss' : 'ws';
+    final wsPort = AppConfig.mqttUseTls ? 8884 : 8000;
+    final url = '$scheme://${AppConfig.mqttBrokerHost}:$wsPort/mqtt';
+
+    _client = MqttBrowserClient(url, clientId)
+      ..keepAlivePeriod = 30
+      ..autoReconnect = false
+      ..connectTimeoutPeriod = 10000
+      ..logging(on: false)
+      ..onConnected = _onConnected
+      ..onDisconnected = _onDisconnected
+      ..onSubscribed = (_) {}
+      ..connectionMessage = MqttConnectMessage()
+          .authenticateAs(AppConfig.mqttUsername, AppConfig.mqttPassword)
+          .withClientIdentifier(clientId)
+          .startClean();
+  } else {
     final port = AppConfig.mqttUseTls
         ? AppConfig.mqttBrokerTlsPort
         : AppConfig.mqttBrokerPort;
@@ -65,14 +86,15 @@ class MqttService {
           .authenticateAs(AppConfig.mqttUsername, AppConfig.mqttPassword)
           .withClientIdentifier(clientId)
           .startClean();
-
-    try {
-      await _client!.connect();
-    } catch (e) {
-      _log.e('MQTT connect error: $e');
-      _scheduleReconnect();
-    }
   }
+
+  try {
+    await _client!.connect();
+  } catch (e) {
+    _log.e('MQTT connect error: $e');
+    _scheduleReconnect();
+  }
+}
 
   void _onConnected() {
     _log.i('MQTT connected');

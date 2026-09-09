@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +14,7 @@ import '../../../telemetry/domain/entities/telemetry_entity.dart';
 import '../../../telemetry/presentation/providers/telemetry_provider.dart';
 import '../../../rider_profile/presentation/providers/profile_provider.dart';
 import '../providers/dashboard_provider.dart';
+import '../providers/ambient_temperature_provider.dart';
 import '../widgets/telemetry_summary_card.dart';
 import '../widgets/bike_status_card.dart';
 import '../widgets/quick_actions_row.dart';
@@ -94,6 +96,7 @@ class _DashboardBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mqttConnected = ref.watch(mqttConnectionStatusProvider).valueOrNull?.isConnected ?? false;
     final bikeAsync = ref.watch(currentBikeProvider);
+    final ambientTemp = ref.watch(ambientTemperatureProvider).valueOrNull;
 
     void sendCommand(String type) {
       if (!mqttConnected) {
@@ -159,7 +162,7 @@ class _DashboardBody extends ConsumerWidget {
                 isLoading: isLoading && telemetry == null,
                 batteryPercentage: telemetry?.batteryPercentage,
                 speedKmh: telemetry?.speedKmh,
-                temperatureCelsius: telemetry?.temperatureCelsius,
+                temperatureCelsius: telemetry?.temperatureCelsius ?? ambientTemp,
                 odometer: telemetry?.odometer,
               ),
               const SizedBox(height: AppSpacing.md),
@@ -197,8 +200,6 @@ class _DashboardBody extends ConsumerWidget {
       ],
     );
   }
-
-
 }
 
 class _ProfileButton extends StatelessWidget {
