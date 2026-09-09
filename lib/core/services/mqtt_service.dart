@@ -64,7 +64,7 @@ class MqttService {
       host: AppConfig.mqttBrokerHost,
       clientId: clientId,
       tcpPort: AppConfig.mqttBrokerTlsPort,
-       webSocketPort: AppConfig.mqttBrokerWebSocketTlsPort,
+      webSocketPort: AppConfig.mqttBrokerWebSocketTlsPort,
     )
       ..keepAlivePeriod = 30
       ..autoReconnect = false
