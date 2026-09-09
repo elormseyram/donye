@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/dependency_injection/injection_container.dart';
+import '../../../auth/data/datasources/portal_session_cache.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/ride_session_entity.dart';
 import '../../domain/entities/weekly_stats_entity.dart';
@@ -20,19 +21,30 @@ final getWeeklyStatsUseCaseProvider = Provider<GetWeeklyStatsUseCase>(
 );
 
 final rideSessionsProvider =
-    FutureProvider<List<RideSessionEntity>>((ref) async {
-  final riderId = ref.watch(currentRiderProvider).value?.id;
-  if (riderId == null) return [];
-  final useCase = ref.watch(getRideSessionsUseCaseProvider);
-  final result = await useCase(riderId);
-  return result.fold((_) => [], (sessions) => sessions);
-});
+    FutureProvider.autoDispose<List<RideSessionEntity>>((ref) async {
+      final riderId =
+          ref.watch(currentRiderProvider).valueOrNull?.id ??
+          PortalSessionCache.riderId ??
+          'offline-rider';
+      final useCase = ref.watch(getRideSessionsUseCaseProvider);
+      final result = await useCase(riderId);
+      return result.fold(
+        (failure) => throw StateError(failure.message),
+        (sessions) => sessions,
+      );
+    });
 
-final weeklyStatsProvider =
-    FutureProvider<WeeklyStatsEntity?>((ref) async {
-  final riderId = ref.watch(currentRiderProvider).value?.id;
-  if (riderId == null) return null;
+final weeklyStatsProvider = FutureProvider.autoDispose<WeeklyStatsEntity?>((
+  ref,
+) async {
+  final riderId =
+      ref.watch(currentRiderProvider).valueOrNull?.id ??
+      PortalSessionCache.riderId ??
+      'offline-rider';
   final useCase = ref.watch(getWeeklyStatsUseCaseProvider);
   final result = await useCase(riderId);
-  return result.fold((_) => null, (stats) => stats);
+  return result.fold(
+    (failure) => throw StateError(failure.message),
+    (stats) => stats,
+  );
 });

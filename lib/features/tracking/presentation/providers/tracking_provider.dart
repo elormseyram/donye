@@ -10,8 +10,7 @@ final trackingRepositoryProvider = Provider<ITrackingRepository>(
   (ref) => getIt<ITrackingRepository>(),
 );
 
-final streamLiveLocationUseCaseProvider =
-    Provider<StreamLiveLocationUseCase>(
+final streamLiveLocationUseCaseProvider = Provider<StreamLiveLocationUseCase>(
   (ref) => getIt<StreamLiveLocationUseCase>(),
 );
 
@@ -30,8 +29,9 @@ final currentLocationProvider = Provider<LocationEntity?>((ref) {
 });
 
 /// Route history fetched from Supabase for the current session.
-final rideRouteProvider =
-    FutureProvider<List<LocationEntity>>((ref) async {
+final rideRouteProvider = FutureProvider.autoDispose<List<LocationEntity>>((
+  ref,
+) async {
   final bikeId = ref.watch(assignedBikeIdProvider);
   if (bikeId == null) return [];
   final useCase = ref.watch(getRideRouteUseCaseProvider);

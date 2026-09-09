@@ -12,6 +12,5 @@ class GetTelemetryHistoryUseCase {
   Future<Either<Failure, List<TelemetryEntity>>> call(
     String bikeId, {
     int limit = 100,
-  }) =>
-      _repository.getHistory(bikeId, limit: limit);
+  }) => _repository.getHistory(bikeId, limit: limit);
 }

@@ -22,6 +22,7 @@ class AlertDetailSheet extends StatelessWidget {
         AlertType.overheat => 'Overheat',
         AlertType.geofence => 'Geofence',
         AlertType.tamper => 'Tamper Detected',
+        AlertType.crash => 'Crash Detected',
         AlertType.fault => 'Fault',
       };
 

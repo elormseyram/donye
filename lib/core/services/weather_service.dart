@@ -5,10 +5,13 @@ import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 
 class AmbientWeather {
+  const AmbientWeather({
+    required this.temperatureCelsius,
+    required this.fetchedAt,
+  });
+
   final double temperatureCelsius;
   final DateTime fetchedAt;
-
-  AmbientWeather({required this.temperatureCelsius, required this.fetchedAt});
 }
 
 @singleton
@@ -17,7 +20,9 @@ class WeatherService {
 
   AmbientWeather? _cached;
 
-  Future<AmbientWeather?> getAmbientTemperature({bool forceRefresh = false}) async {
+  Future<AmbientWeather?> getAmbientTemperature({
+    bool forceRefresh = false,
+  }) async {
     if (!forceRefresh && _cached != null) {
       final age = DateTime.now().difference(_cached!.fetchedAt);
       if (age.inMinutes < 5) return _cached;
@@ -27,10 +32,16 @@ class WeatherService {
       final position = await _getCurrentPosition();
       if (position == null) return _cached;
 
-      final temp = await _fetchTemperature(position.latitude, position.longitude);
+      final temp = await _fetchTemperature(
+        position.latitude,
+        position.longitude,
+      );
       if (temp == null) return _cached;
 
-      _cached = AmbientWeather(temperatureCelsius: temp, fetchedAt: DateTime.now());
+      _cached = AmbientWeather(
+        temperatureCelsius: temp,
+        fetchedAt: DateTime.now(),
+      );
       return _cached;
     } catch (e) {
       _log.e('WeatherService error: $e');
@@ -61,8 +72,10 @@ class WeatherService {
       }
 
       return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.low,
-        timeLimit: const Duration(seconds: 8),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+          timeLimit: Duration(seconds: 8),
+        ),
       );
     } catch (e) {
       _log.e('Failed to get position: $e');

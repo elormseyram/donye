@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -94,20 +93,48 @@ class _DashboardBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mqttConnected = ref.watch(mqttConnectionStatusProvider).valueOrNull?.isConnected ?? false;
+    final mqttConnected =
+        ref.watch(mqttConnectionStatusProvider).valueOrNull?.isConnected ??
+        false;
     final bikeAsync = ref.watch(currentBikeProvider);
     final ambientTemp = ref.watch(ambientTemperatureProvider).valueOrNull;
+    final bikeTemperature = telemetry?.temperatureCelsius;
+    final displayedTemperature = bikeTemperature != null && bikeTemperature != 0
+        ? bikeTemperature
+        : ambientTemp;
 
-    void sendCommand(String type) {
+    Future<void> sendCommand(String type) async {
       if (!mqttConnected) {
-        SrSnackbar.show(context, message: 'MQTT not connected yet. Try again shortly.');
+        SrSnackbar.show(
+          context,
+          message: 'MQTT not connected yet. Try again shortly.',
+        );
         return;
       }
       try {
-        ref.read(mqttServiceProvider).publishCommand({'type': type});
-        SrSnackbar.show(context, message: '${type[0].toUpperCase()}${type.substring(1)} command sent.');
+        final sent = await ref.read(mqttServiceProvider).publishCommand({
+          'type': type,
+        });
+        if (!context.mounted) return;
+        if (!sent) {
+          SrSnackbar.show(
+            context,
+            message: 'Bike did not receive the command.',
+            isError: true,
+          );
+          return;
+        }
+        SrSnackbar.show(
+          context,
+          message: '${type[0].toUpperCase()}${type.substring(1)} command sent.',
+        );
       } catch (_) {
-        SrSnackbar.show(context, message: 'Failed to send command. Try again.', isError: true);
+        if (!context.mounted) return;
+        SrSnackbar.show(
+          context,
+          message: 'Failed to send command. Try again.',
+          isError: true,
+        );
       }
     }
 
@@ -130,10 +157,9 @@ class _DashboardBody extends ConsumerWidget {
                     children: [
                       Text(
                         _greeting,
-                        style:
-                            Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.onSurfaceSecondary,
-                                ),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.onSurfaceSecondary,
+                        ),
                       ),
                       Text(
                         isLoading ? '...' : _firstName,
@@ -142,10 +168,7 @@ class _DashboardBody extends ConsumerWidget {
                     ],
                   ),
                 ),
-                _ProfileButton(
-                  avatarUrl: avatarUrl,
-                  initials: riderName,
-                ),
+                _ProfileButton(avatarUrl: avatarUrl, initials: riderName),
               ],
             ),
           ),
@@ -162,7 +185,7 @@ class _DashboardBody extends ConsumerWidget {
                 isLoading: isLoading && telemetry == null,
                 batteryPercentage: telemetry?.batteryPercentage,
                 speedKmh: telemetry?.speedKmh,
-                temperatureCelsius: telemetry?.temperatureCelsius ?? ambientTemp,
+                temperatureCelsius: displayedTemperature,
                 odometer: telemetry?.odometer,
               ),
               const SizedBox(height: AppSpacing.md),
@@ -211,11 +234,7 @@ class _ProfileButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context.goNamed(RouteNames.profile),
-      child: SrAvatar(
-        imageUrl: avatarUrl,
-        initials: initials,
-        size: 38,
-      ),
+      child: SrAvatar(imageUrl: avatarUrl, initials: initials, size: 38),
     );
   }
 }
@@ -238,9 +257,9 @@ class _SectionHeader extends StatelessWidget {
             child: Text(
               actionLabel!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
       ],
@@ -342,9 +361,9 @@ class _NavCard extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             Text(
               label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: AppColors.onSurface,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge?.copyWith(color: AppColors.onSurface),
             ),
           ],
         ),

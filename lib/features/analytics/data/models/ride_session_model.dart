@@ -27,15 +27,15 @@ abstract class RideSessionModel with _$RideSessionModel {
 
 extension RideSessionModelX on RideSessionModel {
   RideSessionEntity toEntity() => RideSessionEntity(
-        id: id,
-        riderId: riderId,
-        bikeId: bikeId,
-        startTime: DateTime.parse(startTime),
-        endTime: endTime != null ? DateTime.tryParse(endTime!) : null,
-        distanceKm: distanceKm,
-        avgSpeedKmh: avgSpeedKmh,
-        maxSpeedKmh: maxSpeedKmh,
-        energyConsumedKwh: energyConsumedKwh,
-        avgBatteryDrain: avgBatteryDrain,
-      );
+    id: id,
+    riderId: riderId,
+    bikeId: bikeId,
+    startTime: DateTime.parse(startTime),
+    endTime: endTime != null ? DateTime.tryParse(endTime!) : null,
+    distanceKm: distanceKm,
+    avgSpeedKmh: avgSpeedKmh,
+    maxSpeedKmh: maxSpeedKmh,
+    energyConsumedKwh: energyConsumedKwh,
+    avgBatteryDrain: avgBatteryDrain,
+  );
 }

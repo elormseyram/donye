@@ -21,8 +21,7 @@ class LiveGpsTrackingScreen extends ConsumerStatefulWidget {
       _LiveGpsTrackingScreenState();
 }
 
-class _LiveGpsTrackingScreenState
-    extends ConsumerState<LiveGpsTrackingScreen> {
+class _LiveGpsTrackingScreenState extends ConsumerState<LiveGpsTrackingScreen> {
   GoogleMapController? _mapController;
   bool _showRoute = true;
   static const _defaultLatLng = LatLng(5.6037, -0.1870); // Accra, Ghana
@@ -36,7 +35,8 @@ class _LiveGpsTrackingScreenState
           child: SrEmptyState(
             iconWidget: DornyeLogo(size: 64),
             title: 'Map unavailable',
-            subtitle: 'Add a Google Maps API key to the local app configuration.',
+            subtitle:
+                'Add a Google Maps API key to the local app configuration.',
           ),
         ),
       );
@@ -48,7 +48,8 @@ class _LiveGpsTrackingScreenState
         ? LatLng(location.latitude, location.longitude)
         : _defaultLatLng;
 
-    final routePoints = routeAsync.valueOrNull
+    final routePoints =
+        routeAsync.valueOrNull
             ?.map((l) => LatLng(l.latitude, l.longitude))
             .toList() ??
         [];
@@ -63,7 +64,8 @@ class _LiveGpsTrackingScreenState
             snippet: '${location.speedKmh.toStringAsFixed(0)} km/h',
           ),
           icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueOrange),
+            BitmapDescriptor.hueOrange,
+          ),
         ),
     };
 
@@ -90,10 +92,7 @@ class _LiveGpsTrackingScreenState
       body: Stack(
         children: [
           GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: bikeLatLng,
-              zoom: 15,
-            ),
+            initialCameraPosition: CameraPosition(target: bikeLatLng, zoom: 15),
             onMapCreated: (c) => _mapController = c,
             markers: markers,
             polylines: polylines,
@@ -119,8 +118,7 @@ class _LiveGpsTrackingScreenState
                   CameraUpdate.newLatLng(bikeLatLng),
                 );
               },
-              onToggleRoute: () =>
-                  setState(() => _showRoute = !_showRoute),
+              onToggleRoute: () => setState(() => _showRoute = !_showRoute),
             ),
           ),
           // No signal banner

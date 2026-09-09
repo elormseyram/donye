@@ -6,7 +6,8 @@
       "request": "launch",
       "type": "dart",
       "toolArgs": [
-        "--dart-define-from-file=config/local.json"
+        "--dart-define-from-file=config/local.json",
+        "--web-port=50854"
       ]
     }
   ]

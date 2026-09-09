@@ -28,18 +28,18 @@ abstract class TelemetryPayloadModel with _$TelemetryPayloadModel {
 
 extension TelemetryPayloadModelX on TelemetryPayloadModel {
   TelemetryEntity toEntity() => TelemetryEntity(
-        bikeId: bikeId,
-        batteryPercentage: batteryPercentage,
-        voltageV: voltageV,
-        currentA: currentA,
-        speedKmh: speedKmh,
-        temperatureCelsius: temperatureCelsius,
-        odometer: odometer,
-        motorRpm: motorRpm,
-        status: TelemetryStatus.values.firstWhere(
-          (s) => s.name == status,
-          orElse: () => TelemetryStatus.normal,
-        ),
-        timestamp: DateTime.parse(timestamp),
-      );
+    bikeId: bikeId,
+    batteryPercentage: batteryPercentage,
+    voltageV: voltageV,
+    currentA: currentA,
+    speedKmh: speedKmh,
+    temperatureCelsius: temperatureCelsius,
+    odometer: odometer,
+    motorRpm: motorRpm,
+    status: TelemetryStatus.values.firstWhere(
+      (s) => s.name == status,
+      orElse: () => TelemetryStatus.normal,
+    ),
+    timestamp: DateTime.parse(timestamp),
+  );
 }

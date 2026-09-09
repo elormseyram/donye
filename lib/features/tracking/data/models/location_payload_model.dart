@@ -24,12 +24,12 @@ abstract class LocationPayloadModel with _$LocationPayloadModel {
 
 extension LocationPayloadModelX on LocationPayloadModel {
   LocationEntity toEntity() => LocationEntity(
-        bikeId: bikeId,
-        latitude: latitude,
-        longitude: longitude,
-        headingDegrees: headingDegrees,
-        speedKmh: speedKmh,
-        accuracyM: accuracyM,
-        timestamp: DateTime.parse(timestamp),
-      );
+    bikeId: bikeId,
+    latitude: latitude,
+    longitude: longitude,
+    headingDegrees: headingDegrees,
+    speedKmh: speedKmh,
+    accuracyM: accuracyM,
+    timestamp: DateTime.parse(timestamp),
+  );
 }

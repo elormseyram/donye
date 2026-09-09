@@ -15,7 +15,8 @@ Future<void> main() async {
       AppConfig.dornyePortalUrl.isEmpty ||
       AppConfig.dornyePortalPublishableKey.isEmpty) {
     throw StateError(
-      'Missing Supabase build configuration. Use --dart-define-from-file.',
+      'Missing Supabase build configuration. Run with '
+      '--dart-define-from-file=config/local.json.',
     );
   }
 

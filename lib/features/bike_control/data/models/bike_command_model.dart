@@ -24,23 +24,23 @@ abstract class BikeCommandModel with _$BikeCommandModel {
 
 extension BikeCommandModelX on BikeCommandModel {
   BikeCommandEntity toEntity() => BikeCommandEntity(
-        bikeId: bikeId,
-        type: CommandType.values.firstWhere(
-          (t) => t.name == type,
-          orElse: () => CommandType.lock,
-        ),
-        payload: payload,
-        issuedAt: DateTime.parse(issuedAt),
-        status: CommandStatus.values.firstWhere(
-          (s) => s.name == status,
-          orElse: () => CommandStatus.pending,
-        ),
-      );
+    bikeId: bikeId,
+    type: CommandType.values.firstWhere(
+      (t) => t.name == type,
+      orElse: () => CommandType.lock,
+    ),
+    payload: payload,
+    issuedAt: DateTime.parse(issuedAt),
+    status: CommandStatus.values.firstWhere(
+      (s) => s.name == status,
+      orElse: () => CommandStatus.pending,
+    ),
+  );
 
   Map<String, dynamic> toMqttPayload() => {
-        'bike_id': bikeId,
-        'type': type,
-        if (payload != null) 'payload': payload,
-        'issued_at': issuedAt,
-      };
+    'bike_id': bikeId,
+    'type': type,
+    if (payload != null) 'payload': payload,
+    'issued_at': issuedAt,
+  };
 }

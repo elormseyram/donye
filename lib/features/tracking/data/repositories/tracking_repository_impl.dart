@@ -15,10 +15,8 @@ class TrackingRepositoryImpl implements ITrackingRepository {
   final ITrackingRemoteDataSource _remote;
 
   @override
-  Stream<LocationEntity> get liveLocationStream =>
-      _mqttService.locationStream.map(
-        (json) => LocationPayloadModel.fromJson(json).toEntity(),
-      );
+  Stream<LocationEntity> get liveLocationStream => _mqttService.locationStream
+      .map((json) => LocationPayloadModel.fromJson(json).toEntity());
 
   @override
   Future<Either<Failure, List<LocationEntity>>> getRideRoute(

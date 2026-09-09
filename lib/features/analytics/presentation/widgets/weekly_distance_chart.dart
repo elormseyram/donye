@@ -46,16 +46,14 @@ class WeeklyDistanceChart extends StatelessWidget {
         padding: const EdgeInsets.only(right: AppSpacing.sm),
         child: BarChart(
           BarChartData(
-            maxY: maxY * 1.3,
+            maxY: maxY > 0 ? maxY * 1.3 : 1,
             barGroups: bars,
             gridData: FlGridData(
               show: true,
               drawVerticalLine: false,
               horizontalInterval: maxY > 0 ? maxY / 4 : 1,
-              getDrawingHorizontalLine: (_) => FlLine(
-                color: AppColors.outline,
-                strokeWidth: 1,
-              ),
+              getDrawingHorizontalLine: (_) =>
+                  FlLine(color: AppColors.outline, strokeWidth: 1),
             ),
             borderData: FlBorderData(show: false),
             titlesData: FlTitlesData(

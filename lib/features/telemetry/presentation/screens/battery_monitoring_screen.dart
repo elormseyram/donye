@@ -62,23 +62,24 @@ class BatteryMonitoringScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Discharge Trend',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Discharge Trend',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 SizedBox(
                   height: 150,
                   child: historyAsync.when(
                     loading: () => const SkeletonPulse(
-                        child: SkeletonBox(height: 150, radius: 8)),
-                    error: (_, __) =>
-                        const Center(child: Text('No data')),
+                      child: SkeletonBox(height: 150, radius: 8),
+                    ),
+                    error: (_, __) => const Center(child: Text('No data')),
                     data: (history) {
                       if (history.isEmpty) {
                         return const Center(child: Text('No history yet'));
                       }
                       final sorted = history.toList()
-                        ..sort((a, b) =>
-                            a.timestamp.compareTo(b.timestamp));
+                        ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
                       final spots = sorted.asMap().entries.map((e) {
                         return FlSpot(
                           e.key.toDouble(),
@@ -93,13 +94,17 @@ class BatteryMonitoringScreen extends ConsumerWidget {
                           borderData: FlBorderData(show: false),
                           titlesData: const FlTitlesData(
                             leftTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false)),
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
                             rightTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false)),
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
                             topTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false)),
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
                             bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false)),
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
                           ),
                           lineBarsData: [
                             LineChartBarData(
@@ -110,8 +115,9 @@ class BatteryMonitoringScreen extends ConsumerWidget {
                               dotData: const FlDotData(show: false),
                               belowBarData: BarAreaData(
                                 show: true,
-                                color:
-                                    AppColors.success.withValues(alpha: 0.08),
+                                color: AppColors.success.withValues(
+                                  alpha: 0.08,
+                                ),
                               ),
                             ),
                           ],

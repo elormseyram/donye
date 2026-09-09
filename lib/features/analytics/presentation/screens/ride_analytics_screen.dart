@@ -63,43 +63,64 @@ class RideAnalyticsScreen extends ConsumerWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisSpacing: AppSpacing.sm,
-                      mainAxisSpacing: AppSpacing.sm,
-                      childAspectRatio: 1.5,
-                      children: [
-                        RideStatCard(
-                          label: 'Total Distance',
-                          value: stats.totalDistanceKm.toStringAsFixed(1),
-                          unit: 'km',
-                          icon: Icons.route_outlined,
-                          color: AppColors.primary,
-                        ),
-                        RideStatCard(
-                          label: 'Total Rides',
-                          value: stats.totalRides.toString(),
-                          unit: 'rides',
-                          icon: Icons.directions_bike_outlined,
-                          color: AppColors.success,
-                        ),
-                        RideStatCard(
-                          label: 'Avg Speed',
-                          value: stats.avgSpeedKmh.toStringAsFixed(1),
-                          unit: 'km/h',
-                          icon: Icons.speed_outlined,
-                          color: AppColors.warning,
-                        ),
-                        RideStatCard(
-                          label: 'Energy Used',
-                          value: stats.totalEnergyKwh.toStringAsFixed(2),
-                          unit: 'kWh',
-                          icon: Icons.bolt_outlined,
-                          color: AppColors.success,
-                        ),
-                      ],
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final columns = constraints.maxWidth >= 900 ? 4 : 2;
+                        final cardWidth =
+                            (constraints.maxWidth -
+                                AppSpacing.sm * (columns - 1)) /
+                            columns;
+                        return Wrap(
+                          spacing: AppSpacing.sm,
+                          runSpacing: AppSpacing.sm,
+                          children: [
+                            SizedBox(
+                              width: cardWidth,
+                              height: 120,
+                              child: RideStatCard(
+                                label: 'Total Distance',
+                                value: stats.totalDistanceKm.toStringAsFixed(1),
+                                unit: 'km',
+                                icon: Icons.route_outlined,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              height: 120,
+                              child: RideStatCard(
+                                label: 'Total Rides',
+                                value: stats.totalRides.toString(),
+                                unit: 'rides',
+                                icon: Icons.directions_bike_outlined,
+                                color: AppColors.success,
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              height: 120,
+                              child: RideStatCard(
+                                label: 'Avg Speed',
+                                value: stats.avgSpeedKmh.toStringAsFixed(1),
+                                unit: 'km/h',
+                                icon: Icons.speed_outlined,
+                                color: AppColors.warning,
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              height: 120,
+                              child: RideStatCard(
+                                label: 'Energy Used',
+                                value: stats.totalEnergyKwh.toStringAsFixed(2),
+                                unit: 'kWh',
+                                icon: Icons.bolt_outlined,
+                                color: AppColors.success,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: AppSpacing.md),
                     SrCard(
@@ -121,7 +142,10 @@ class RideAnalyticsScreen extends ConsumerWidget {
               },
             ),
             sessionsAsync.when(
-              loading: () => const GenericListSkeleton(count: 4),
+              loading: () => const SizedBox(
+                height: 360,
+                child: GenericListSkeleton(count: 4),
+              ),
               error: (e, _) => SrErrorWidget(
                 message: 'Could not load ride sessions',
                 onRetry: () => ref.invalidate(rideSessionsProvider),
@@ -156,10 +180,13 @@ class RideAnalyticsScreen extends ConsumerWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    ...sessions.take(10).map(
+                    ...sessions
+                        .take(10)
+                        .map(
                           (s) => Padding(
-                            padding:
-                                const EdgeInsets.only(bottom: AppSpacing.sm),
+                            padding: const EdgeInsets.only(
+                              bottom: AppSpacing.sm,
+                            ),
                             child: _RideSessionTile(session: s),
                           ),
                         ),
